@@ -11,7 +11,7 @@ class User(Base):
     id = Column(Integer, primary_key=True, index=True)
     username = Column(String, unique=True, index=True, nullable=False)
     password_hash = Column(String, nullable=False)
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime, default=datetime.utcnow())
     
     clips = relationship("Clip", back_populates="user")
     
@@ -22,7 +22,7 @@ class Clip(Base):
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     filename = Column(String, nullable=False)
     file_path = Column(String, nullable=False)
-    uploaded_at = Column(DateTime, default=datetime.now(datetime.timezone.utc))
+    uploaded_at = Column(DateTime, default=datetime.utcnow())
     file_size = Column(BigInteger, nullable=False)
     duration = Column(Integer)
     title = Column(String, nullable=False)

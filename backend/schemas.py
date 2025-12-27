@@ -34,4 +34,5 @@ class ClipResponse(BaseModel):
         from_attributes = True
 
 class ClipUpload(BaseModel):
-    pass
+    title: str
+    description: Optional[str] = None
