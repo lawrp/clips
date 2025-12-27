@@ -1,1 +1,4 @@
-/backened/uploads
+backend/uploads/
+backend/venv/
+backend/clip_queue.db
+backend/__pycache__/
