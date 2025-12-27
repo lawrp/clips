@@ -7,6 +7,7 @@ from typing import List
 import shutil
 import os
 from uuid import uuid4
+import ffmpeg
 
 from database import get_db
 from models import User, Clip
@@ -84,11 +85,20 @@ async def upload_clip(
     file_path = f"{UPLOAD_DIR}/{unique_filename}"
     os.rename(temp_path, file_path)
     
+    try:
+        probe = ffmpeg.probe(file_path)
+        duration = float(probe['format']['duration'])
+        duration_seconds = int(duration)
+    except Exception as e:
+        print(f"Could not get the video duration due to an error: {e}")
+        duration_seconds = None
+        
     new_clip = Clip(
         user_id=current_user.id,
         filename=file.filename,
         file_path=file_path,
         file_size=file_size,
+        duration=duration_seconds,
         title=title,
         description=description
     )
@@ -112,12 +122,37 @@ async def upload_clip(
     return response
 
 @app.get("/api/clips", response_model=List[ClipResponse])
-def get_clips(user_id: int = None, db: Session = Depends(get_db)):
+def get_clips(user_id: int = None, search: str = None, min_duration: int = None, max_duration: int = None, db: Session = Depends(get_db)):
     query = db.query(Clip).join(User)
     
     if user_id:
         query = query.filter(Clip.user_id == user_id)
         
+    if search:
+        query = query.filter(Clip.title.ilike(f"%{search}%"))
+        
+    if min_duration:
+        query = query.filter(Clip.duration >= min_duration)
+    
+    if max_duration:
+        query = query.filter(Clip.duration <= max_duration)
+    
+    
     clips = query.order_by(Clip.uploaded_at.asc()).all()
-    return clips
+    
+    return [
+        ClipResponse(
+            id=clip.id,
+            user_id=clip.user_id,
+            filename=clip.filename,
+            file_path=clip.file_path,
+            title=clip.title,
+            description=clip.description,
+            uploaded_at=clip.uploaded_at,
+            file_size=clip.file_size,
+            duration=clip.duration,
+            username=clip.user.username
+        )
+        for clip in clips
+    ]
 

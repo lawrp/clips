@@ -7,7 +7,6 @@ from database import get_db
 from models import User
 import bcrypt
 
-
 SECRET_KEY = "MY_SECRET_KEY"
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRATION = 60 * 24 * 14
