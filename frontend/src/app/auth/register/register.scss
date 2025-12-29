@@ -1,0 +1,9 @@
+@import '../login/login.scss';
+
+// Add this for validation errors
+.error-text {
+  display: block;
+  color: var(--error);
+  font-size: 13px;
+  margin-top: 4px;
+}

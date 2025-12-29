@@ -41,6 +41,11 @@ def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depend
     access_token = create_access_token(data={"sub": user.username})
     return {"access_token": access_token, "token_type": "bearer"}
 
+@app.get("/api/users/me", response_model=UserResponse)
+def get_current_user_info(current_user: User = Depends(get_current_user)):
+    return current_user
+    
+
 
 @app.post("/api/register", response_model=UserResponse)
 def register(user: UserCreate, db: Session = Depends(get_db)):
