@@ -1,1 +1,110 @@
-<p>upload works!</p>
+<!-- upload.component.html -->
+<div class="upload-container">
+  <div class="upload-card">
+    <h1>Upload Your Clip</h1>
+    <p class="subtitle">Share your greatest gaming moments</p>
+
+    <form (ngSubmit)="onSubmit()" #uploadForm="ngForm">
+      <!-- File Upload -->
+      <div class="form-group">
+        <label class="file-label">
+          <input 
+            type="file" 
+            accept="video/*"
+            (change)="onFileSelected($event)"
+            [disabled]="isUploading()"
+            hidden
+          />
+          <div class="file-upload-area" [class.has-file]="selectedFile()">
+            @if (!selectedFile()) {
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M7 18a4.6 4.4 0 0 1 0 -9a5 4.5 0 0 1 11 2h1a3.5 3.5 0 0 1 0 7h-1" />
+                <polyline points="9 15 12 12 15 15" />
+                <path d="M12 12v9" />
+              </svg>
+              <p class="upload-text">Click to select video file</p>
+              <p class="upload-hint">MP4 files only, max 1GB</p>
+            } @else {
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+              </svg>
+              <p class="file-name">{{ fileName() }}</p>
+              @if (!isUploading()) {
+                <button type="button" class="change-file-btn" (click)="cancelUpload()">
+                  Change File
+                </button>
+              }
+            }
+          </div>
+        </label>
+      </div>
+
+      <!-- Title -->
+      <div class="form-group">
+        <label for="title">Title *</label>
+        <input
+          type="text"
+          id="title"
+          name="title"
+          [ngModel]="title()"
+          (ngModelChange)="title.set($event)"
+          required
+          maxlength="100"
+          placeholder="Epic headshot montage"
+          [disabled]="isUploading()"
+        />
+      </div>
+
+      <!-- Description -->
+      <div class="form-group">
+        <label for="description">Description</label>
+        <textarea
+          id="description"
+          name="description"
+          [ngModel]="description()"
+          (ngModelChange)="description.set($event)"
+          rows="4"
+          maxlength="500"
+          placeholder="Add some context about your clip..."
+          [disabled]="isUploading()"
+        ></textarea>
+      </div>
+
+      <!-- Progress Bar -->
+      @if (isUploading()) {
+        <div class="progress-section">
+          <app-loading-progress
+            [progress]="uploadProgress()" 
+            color="primary"
+          ></app-loading-progress>
+          <p class="upload-status">Uploading your clip...</p>
+        </div>
+      }
+
+      <!-- Submit Button -->
+      <div class="form-actions">
+        <button 
+          type="submit" 
+          class="submit-btn"
+          [disabled]="!selectedFile() || !title() || isUploading()"
+        >
+          @if (isUploading()) {
+            Uploading...
+          } @else {
+            Upload Clip
+          }
+        </button>
+        
+        @if (!isUploading()) {
+          <button 
+            type="button" 
+            class="cancel-btn"
+            (click)="goToProfile()"
+          >
+            Cancel
+          </button>
+        }
+      </div>
+    </form>
+  </div>
+</div>

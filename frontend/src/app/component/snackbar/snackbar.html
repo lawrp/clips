@@ -1,0 +1,6 @@
+@if (message$(); as msg) {
+  <div class="snackbar" [class]="'snackbar-' + msg.type">
+    <span>{{ msg.message }}</span>
+    <button class="close-btn" (click)="snackbarService.hide()">×</button>
+  </div>
+}

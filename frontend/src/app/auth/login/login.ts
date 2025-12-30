@@ -33,10 +33,11 @@ export class Login {
         this.router.navigate(['/dashboard'], { replaceUrl: true });
         console.log('navigating to dashboard!');
       },
-      error: () => {
+      error: (e) => {
         console.log('Login error');
-        this.loginStatus.set('Login Failed!');
+        this.loginStatus.set(e.error.detail);
         this.isError.set(true);
+        this.isSubmitting.set(false);
       },
     });
   }

@@ -32,10 +32,13 @@ MAX_FILE_SIZE = 1024 * 1024 * 1024
 @app.post("/api/login", response_model=Token)
 def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
     user = db.query(User).filter(User.username == form_data.username).first()
-    if not user or not verify_password(form_data.password, user.password_hash):
+    if not user:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found with that username.")
+    
+    if not verify_password(form_data.password, user.password_hash):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Incorrect username or password"
+            detail="Incorrect password for that username!"
         )
     
     access_token = create_access_token(data={"sub": user.username})
