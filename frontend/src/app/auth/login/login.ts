@@ -31,6 +31,7 @@ export class Login {
       next: () => {
         console.log('Login successful, navigating to dashboard...');
         this.router.navigate(['/dashboard'], { replaceUrl: true });
+        console.log('navigating to dashboard!');
       },
       error: () => {
         console.log('Login error');

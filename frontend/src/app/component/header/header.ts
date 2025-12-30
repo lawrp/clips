@@ -1,5 +1,5 @@
 import { Component, inject, OnDestroy, OnInit, signal } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { User } from '../../models/auth.model';
 import { Auth } from '../../services/auth';
 import { Subscription } from 'rxjs';
@@ -14,6 +14,7 @@ export class Header implements OnInit, OnDestroy {
   currentUser = signal<User | null>(null);
   authService = inject(Auth);
   authSubscription!: Subscription
+  router = inject(Router)
 
   ngOnInit() {
     this.authSubscription = this.authService.currentUser$.subscribe({
@@ -28,6 +29,7 @@ export class Header implements OnInit, OnDestroy {
 
   logout() {
     this.authService.logout();
+    this.router.navigate(['/login']);
   }
 
   ngOnDestroy(): void {

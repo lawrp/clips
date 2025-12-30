@@ -17,6 +17,8 @@ export class App implements OnInit, OnDestroy {
   authSubscription!: Subscription
 
   ngOnInit() {
+    this.authService.initializeAuth();
+
     this.authSubscription = this.authService.isAuthenticated$.subscribe({
       next: (isAuth) => {
         this.isAuthenticated.set(isAuth);

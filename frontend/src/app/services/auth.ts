@@ -7,6 +7,7 @@ import {
   filter,
   map,
   Observable,
+  switchMap,
   tap,
 } from 'rxjs';
 import { LoginRequest, RegisterRequest, TokenResponse, User } from '../models/auth.model';
@@ -68,8 +69,10 @@ export class Auth {
         tap((response) => {
           localStorage.setItem('token', response.access_token);
         }),
-        tap(() => {
-          this.loadCurrentUser();
+        switchMap(() => this.httpClient.get<User>(`${this.apiUrl}/api/users/me`)),
+        tap((user) => {
+          this.currentUserSubject.next(user);
+          this.authInitializedSubject.next(true);
         })
       );
   }

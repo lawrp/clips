@@ -45,7 +45,12 @@ def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depend
 def get_current_user_info(current_user: User = Depends(get_current_user)):
     return current_user
     
-
+@app.get("/api/users/{username}", response_model=UserResponse)
+def get_user_by_username(username: str, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    user = db.query(User).filter(User.username == username).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    return user
 
 @app.post("/api/register", response_model=UserResponse)
 def register(user: UserCreate, db: Session = Depends(get_db)):
@@ -159,5 +164,18 @@ def get_clips(user_id: int = None, search: str = None, min_duration: int = None,
             username=clip.user.username
         )
         for clip in clips
+        if os.path.exists(clip.file_path)
     ]
+
+@app.get("/api/clips/{clip_id}/video")
+def stream_video(clip_id: int, db: Session = Depends(get_db)):
+    clip = db.query(Clip).filter(Clip.id == clip_id).first()
+    
+    if not clip:
+        raise HTTPException(status_code=404, detail="Clip not found")
+    
+    if not os.path.exists(clip.file_path):
+        raise HTTPException(status_code=404, detail="Video file not found")
+    
+    return FileResponse(clip.file_path, media_type="video/mp4")
 
