@@ -7,6 +7,7 @@ import { Auth } from '../../services/auth';
 import { SnackbarService } from '../../services/snackbar';
 import { LoadingProgress } from '../../component/loading-progress/loading-progress';
 import { environment } from '../../../environments/environment.development';
+import { ClipService } from '../../services/clip-service';
 
 @Component({
   selector: 'app-upload',
@@ -16,7 +17,7 @@ import { environment } from '../../../environments/environment.development';
 })
 export class Upload {
   private httpClient = inject(HttpClient);
-  private authService = inject(Auth);
+  private clipService = inject(ClipService);
   private router = inject(Router);
   private snackbarService = inject(SnackbarService);
   private apiUrl = environment.apiUrl;
@@ -32,7 +33,7 @@ export class Upload {
 
   onFileSelected(event: Event) {
     const input = event.target as HTMLInputElement;
-    if (input.files && input.files.length > 0) {
+    if (input.files && input.files.length === 1) {
       const file = input.files[0];
       
       // Validate file type
@@ -61,15 +62,11 @@ export class Upload {
     this.isUploading.set(true);
     this.uploadProgress.set(0);
 
-    const formData = new FormData();
-    formData.append('file', this.selectedFile()!);
-    formData.append('title', this.title());
-    formData.append('description', this.description() || '');
-
-    this.httpClient.post(`${this.apiUrl}/api/clips/upload`, formData, {
-      reportProgress: true,
-      observe: 'events'
-    }).subscribe({
+     this.clipService.uploadClip(
+      this.selectedFile()!,
+      this.title(),
+      this.description()
+    ).subscribe({
       next: (event) => {
         if (event.type === HttpEventType.UploadProgress && event.total) {
           const progress = Math.round(100 * event.loaded / event.total);
@@ -77,7 +74,7 @@ export class Upload {
         } else if (event.type === HttpEventType.Response) {
           this.snackbarService.show('Clip uploaded successfully!', 'success');
           setTimeout(() => {
-            this.router.navigate(['/profile/me']);
+            this.goToProfile();
           }, 1500);
         }
       },
@@ -85,7 +82,7 @@ export class Upload {
         this.isUploading.set(false);
         this.uploadProgress.set(0);
         this.snackbarService.show(
-          err.error?.detail || 'Upload failed. Please try again.', 
+          err.error?.detail || 'Upload failed. Please try again.',
           'error'
         );
       }

@@ -3,10 +3,11 @@ import { RouterOutlet } from '@angular/router';
 import { Auth } from './services/auth';
 import { Subscription } from 'rxjs';
 import { Header } from './component/header/header';
+import { Snackbar } from './component/snackbar/snackbar';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, Header],
+  imports: [RouterOutlet, Header, Snackbar],
   templateUrl: './app.html',
   styleUrl: './app.scss'
 })

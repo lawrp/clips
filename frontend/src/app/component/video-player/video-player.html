@@ -1,21 +1,9 @@
-<div class="video-container" (click)="onVideoClick()">
+<!-- video-player.component.html -->
+<div class="video-container">
   <video 
     #videoElement
     [src]="videoUrl"
     [autoplay]="autoplay"
     [controls]="controls"
-    (play)="isPlaying.set(true); showPlayButton.set(false)"
-    (pause)="isPlaying.set(false); showPlayButton.set(true)"
-    (ended)="isPlaying.set(false); showPlayButton.set(true)"
   ></video>
-  
-  @if (showPlayButton()) {
-    <div class="play-overlay">
-      <button class="play-button" (click)="play(); $event.stopPropagation()">
-        <svg viewBox="0 0 24 24" fill="currentColor">
-          <path d="M8 5v14l11-7z"/>
-        </svg>
-      </button>
-    </div>
-  }
 </div>
