@@ -2,7 +2,7 @@ import { Component, inject, Input, OnDestroy, OnInit, signal } from '@angular/co
 import { Auth } from '../../services/auth';
 import { Router } from '@angular/router';
 import { User } from '../../models/auth.model';
-import { Subscription, switchMap, tap } from 'rxjs';
+import { reduce, Subscription, switchMap, tap } from 'rxjs';
 import { DatePipe } from '@angular/common';
 import { Clip } from '../../models/clip.model';
 import { ProfileService } from '../../services/profile';
@@ -38,10 +38,31 @@ export class Profile implements OnInit, OnDestroy {
       tap(user => this.user.set(user)),
       switchMap(user => this.clipService.getClipsByUserId(user.id))
     ).subscribe({
-      next: (clips) => this.clips.set(clips),
+      next: (clips) => {
+        console.table(clips);
+        this.clips.set(clips);
+        this.totalClips.set(this.getTotalClips(this.clips()));
+        this.totalDuration.set(this.getWatchTime(this.clips()));
+
+      },
       error: (e) => console.error(`Error fetching clips... ${e}`)
     });
       
+    
+  }
+
+  getTotalClips(clips: Clip[]) {
+    return clips.length
+  }
+
+  getWatchTime(clips: Clip[]) {
+    return clips.reduce((total, video: Clip) => {
+      return total + video.duration!
+    }, 0)
+  }
+
+  getRecentDate(clips: Clip[]) {
+    return clips.find((clip) => Math.min(new Date(clip.uploaded_at).getMilliseconds()))
   }
 
   ngOnDestroy() {
