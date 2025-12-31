@@ -43,6 +43,7 @@ export class Profile implements OnInit, OnDestroy {
         this.clips.set(clips);
         this.totalClips.set(this.getTotalClips(this.clips()));
         this.totalDuration.set(this.getWatchTime(this.clips()));
+        this.lastUpload.set(this.getRecentDate(this.clips())?.uploaded_at!)
 
       },
       error: (e) => console.error(`Error fetching clips... ${e}`)
