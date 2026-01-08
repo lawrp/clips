@@ -1,3 +1,4 @@
+from datetime import datetime, timezone
 from fastapi import FastAPI, Depends, HTTPException, status, UploadFile, File, Form
 from fastapi.security import OAuth2PasswordRequestForm
 from fastapi.responses import FileResponse
@@ -10,9 +11,10 @@ from uuid import uuid4
 import ffmpeg
 
 from database import get_db
-from models import User, Clip
-from schemas import UserCreate, UserResponse, Token, ClipResponse
+from models import User, Clip, Comment
+from schemas import UserCreate, UserResponse, Token, ClipResponse, CommentResponse, CommentCreate, CommentUpdate
 from auth import hash_password, verify_password, create_access_token, get_current_user
+
 
 app = FastAPI()
 
@@ -182,3 +184,147 @@ def stream_video(clip_id: int, db: Session = Depends(get_db)):
     
     return FileResponse(clip.file_path, media_type="video/mp4")
 
+
+@app.get("/api/clips/{clip_id}/comments", response_model=List[CommentResponse])
+def get_comments(clip_id: int, include_deleted: bool = False, db: Session = Depends(get_db)):
+    
+    clip = db.query(Clip).filter(Clip.id == clip_id).first()
+    if not clip:
+        raise HTTPException(status_code=404, detail="Clip not found")
+    
+    query = db.query(Comment).filter(Comment.video_id == clip.id)
+    
+    if not include_deleted:
+        query = query.filter(Comment.is_deleted == False)
+    
+    comments = query.order_by(Comment.created_at.desc()).all()
+    
+    return [
+        CommentResponse(
+            id=comment.id,
+            video_id=comment.video_id,
+            commenter_id=comment.commenter_id,
+            commenter_username=comment.user.username,
+            message=comment.message,
+            created_at=comment.created_at,
+            edited_at=comment.edited_at,
+            parent_comment_id=comment.parent_comment_id,
+            likes=comment.likes,
+            dislikes=comment.dislikes,
+            reply_count=len([r for r in comment.replies if not r.is_deleted]),
+            is_deleted=comment.is_deleted
+        )
+        for comment in comments
+    ]
+ 
+@app.post("/api/comments", response_model=CommentResponse, status_code=status.HTTP_201_CREATED)
+def create_comment(comment: CommentCreate, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    clip = db.query(Clip).filter(Clip.id == comment.video_id).first()
+    if not clip:
+        raise HTTPException(status_code=404, detail="Clip not found")
+    
+    if comment.parent_comment_id:
+        parent = db.query(Comment).filter(Comment.id == comment.parent_comment_id).first()
+        if not parent:
+            raise HTTPException(status_code=404, detail="Parent comment not found")
+        
+        if parent.video_id != comment.video_id:
+            raise HTTPException(status_code=400, detail="Parent comment is not on this clip")
+        
+    new_comment = Comment(
+        video_id=comment.video_id,
+        commenter_id=current_user.id,
+        message=comment.message,
+        parent_comment_id=comment.parent_comment_id,
+        likes=0,
+        dislikes=0,
+        is_deleted=False
+    )
+    
+    db.add(new_comment)
+    db.commit()
+    db.refresh(new_comment)
+    
+    return CommentResponse(
+        id=new_comment.id,
+        video_id=new_comment.video_id,
+        commenter_id=new_comment.commenter_id,
+        commenter_username=current_user.username,
+        message=new_comment.message,
+        created_at=new_comment.created_at,
+        edited_at=new_comment.edited_at,
+        parent_comment_id=new_comment.parent_comment_id,
+        likes=new_comment.likes,
+        dislikes=new_comment.dislikes,
+        reply_count=0,  
+        is_deleted=new_comment.is_deleted
+    )
+    
+@app.put("/api/comments/{comment_id}", response_model=CommentResponse)
+def update_comment(
+    comment_id: int,
+    comment_update: CommentUpdate,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    # Find the comment
+    comment = db.query(Comment).filter(Comment.id == comment_id).first()
+    if not comment:
+        raise HTTPException(status_code=404, detail="Comment not found")
+    
+    # Verify ownership
+    if comment.commenter_id != current_user.id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You can only edit your own comments"
+        )
+    
+    # Don't allow editing deleted comments
+    if comment.is_deleted:
+        raise HTTPException(status_code=400, detail="Cannot edit deleted comment")
+    
+    # Update the comment
+    comment.message = comment_update.message
+    comment.edited_at = datetime.now(timezone.utc)
+    
+    db.commit()
+    db.refresh(comment)
+    
+    return CommentResponse(
+        id=comment.id,
+        video_id=comment.video_id,
+        commenter_id=comment.commenter_id,
+        commenter_username=comment.user.username,
+        message=comment.message,
+        created_at=comment.created_at,
+        edited_at=comment.edited_at,
+        parent_comment_id=comment.parent_comment_id,
+        likes=comment.likes,
+        dislikes=comment.dislikes,
+        reply_count=len(comment.replies) if comment.replies else 0,
+        is_deleted=comment.is_deleted
+    )
+    
+@app.delete("/api/comments/{comment_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_comment(
+    comment_id: int,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    comment = db.query(Comment).filter(Comment.id == comment_id).first()
+    if not comment:
+        raise HTTPException(status_code=404, detail="Comment not found")
+    
+    # Verify ownership
+    if comment.commenter_id != current_user.id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You can only delete your own comments"
+        )
+    
+    # Soft delete - keep the comment but mark as deleted
+    comment.is_deleted = True
+    comment.message = "[deleted]"
+    
+    db.commit()
+    return None

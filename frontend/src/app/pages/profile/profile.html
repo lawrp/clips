@@ -1,10 +1,9 @@
 <!-- profile.component.html -->
 <div class="profile-container">
   <div class="profile-header">
-     @if (user(); as currentUser) {
+    @if (user(); as currentUser) {
     <div class="user-info">
       <div class="avatar">
-       
         {{ currentUser.username.charAt(0).toUpperCase() }}
       </div>
       <div class="user-details">
@@ -19,11 +18,15 @@
         <span class="stat-label">Total Clips</span>
       </div>
       <div class="stat-card">
-        <span class="stat-value">{{ totalDuration() }}</span>
+        <span class="stat-value">{{ totalDuration() }}s</span>
         <span class="stat-label">Watch Time</span>
       </div>
       <div class="stat-card">
+        @if (lastUpload()) {
         <span class="stat-value">{{ lastUpload() | date : 'short' }}</span>
+        } @else {
+        <span class="stat-value">Never</span>
+        }
         <span class="stat-label">Last Upload</span>
       </div>
     </div>
@@ -47,22 +50,16 @@
       @for (clip of clips(); track clip.id) {
       <div class="clip-card">
         <div class="clip-thumbnail">
-            <app-video-player
-              [clipId]="clip.id"
-              [controls]="true"
-              [autoplay]="false">
-            </app-video-player>
+          <app-video-player [clipId]="clip.id" [controls]="true" [autoplay]="false">
+          </app-video-player>
           <div class="duration-badge">{{ clip.duration }}s</div>
         </div>
         <div class="clip-info">
-          <h3>{{ clip.title }}</h3>
+          <h3 (click)="navigateToClip(clip.id)">{{ clip.title }}</h3>
           <p class="clip-meta">{{ clip.uploaded_at | date : 'short' }}</p>
         </div>
       </div>
-      }
-
-      <!-- Empty state -->
-      @if (clips().length === 0) {
+      } @if (clips().length === 0) {
       <div class="empty-state">
         <p>No clips uploaded yet</p>
       </div>

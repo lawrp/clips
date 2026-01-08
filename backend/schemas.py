@@ -13,6 +13,9 @@ class UserResponse(BaseModel):
 
     class Config:
         from_attributes = True
+        json_encoders = {
+            datetime: lambda dt: dt.isoformat() + 'Z' if dt.tzinfo is None else dt.isoformat()
+        }
 
 class Token(BaseModel):
     access_token: str
@@ -32,7 +35,38 @@ class ClipResponse(BaseModel):
     
     class Config:
         from_attributes = True
+        json_encoders = {
+            datetime: lambda dt: dt.isoformat() + 'Z' if dt.tzinfo is None else dt.isoformat()
+        }
 
 class ClipUpload(BaseModel):
     title: str
     description: Optional[str] = None
+    
+class CommentResponse(BaseModel):
+    id: int
+    video_id: int
+    commenter_id: int
+    commenter_username: str
+    message: str
+    created_at: datetime
+    edited_at: datetime | None
+    parent_comment_id: int | None
+    likes: int
+    dislikes: int
+    reply_count: int
+    is_deleted: bool
+    
+    class Config:
+        from_attributes = True
+        json_encoders = {
+            datetime: lambda dt: dt.isoformat() + 'Z' if dt.tzinfo is None else dt.isoformat()
+        }
+
+class CommentCreate(BaseModel):
+    video_id: int
+    message: str
+    parent_comment_id: int | None = None
+    
+class CommentUpdate(BaseModel):
+    message: str
