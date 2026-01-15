@@ -1,1 +1,59 @@
-<p>comment works!</p>
+<div class="comment-container" [class.deleted]="comment.is_deleted">
+  <div class="comment-header">
+    <img
+      class="user-avatar"
+      src="assets/default-avatar.png"
+      alt="{{ comment.commenter_username }}'s avatar"
+    />
+    <div class="comment-info">
+      <div class="user-details">
+        <span class="username">{{ comment.commenter_username }}</span>
+        <span class="timestamp">{{ timeAgo }}</span>
+        @if (comment.edited_at) {
+        <span class="edited-badge">(edited)</span>
+        }
+      </div>
+    </div>
+    @if (isOwnComment && !comment.is_deleted) {
+    <div class="comment-actions">
+      <button class="action-btn" (click)="onEdit()" title="Edit">
+        <span class="icon">✏️</span>
+      </button>
+      <button class="action-btn delete" (click)="onDelete()" title="Delete">
+        <span class="icon">🗑️</span>
+      </button>
+    </div>
+    }
+  </div>
+
+  <div class="comment-body">
+    <p class="message" [class.deleted-message]="comment.is_deleted">
+      {{ comment.message }}
+    </p>
+  </div>
+
+  <div class="comment-footer">
+    <button class="footer-btn" (click)="onReply()"><span class="icon">💬</span> Reply</button>
+
+    @if (comment.reply_count > 0) {
+    <span class="reply-count"
+      >{{ comment.reply_count }} {{ comment.reply_count === 1 ? 'reply' : 'replies' }}
+    </span>
+    }
+
+    <div class="like-dislike">
+      <button class="footer-btn"><span class="icon">👍</span> {{ comment.likes }}</button>
+      <button class="footer-btn"><span class="icon">👎</span> {{ comment.dislikes }}</button>
+    </div>
+  </div>
+
+  @if (showReplyForm()) {
+    <div class="reply-form">
+        <textarea placeholder="Write a reply..." class="reply-input"></textarea>
+        <div class="reply-actions">
+            <button class="btn-cancel" (click)="showReplyForm.set(false)">Cancel</button>
+            <button class="btn-submit">Reply</button>
+        </div>
+    </div>
+  }
+</div>

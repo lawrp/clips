@@ -1,6 +1,6 @@
 import { Component, inject, OnDestroy, OnInit, signal } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
-import { Auth } from './services/auth';
+import { AuthService } from './services/auth';
 import { Subscription } from 'rxjs';
 import { Header } from './component/header/header';
 import { Snackbar } from './component/snackbar/snackbar';
@@ -13,7 +13,7 @@ import { Snackbar } from './component/snackbar/snackbar';
 })
 export class App implements OnInit, OnDestroy {
   protected readonly title = signal('Clip Champ');
-  authService = inject(Auth);
+  authService = inject(AuthService);
   isAuthenticated = signal<boolean>(false);
   authSubscription!: Subscription
 

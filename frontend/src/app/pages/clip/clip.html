@@ -1,1 +1,15 @@
-<p>clip works!</p>
+<div class="clip-page-container">
+  @if (clip()) {
+  <h1>{{ clip()?.title }}</h1>
+  } @else {
+  <h1>Clip {{ clipId }}</h1>
+  }
+
+  <!-- Placeholder for video section -->
+  <div class="video-section-placeholder">
+    <app-video-player [clipId]="clipId"></app-video-player>
+  </div>
+
+  <!-- Comments section -->
+  <app-comments-section [clipId]="clipId"></app-comments-section>
+</div>

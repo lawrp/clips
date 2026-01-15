@@ -1,7 +1,7 @@
 import { Component, inject, OnDestroy, OnInit, signal } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { User } from '../../models/auth.model';
-import { Auth } from '../../services/auth';
+import { AuthService } from '../../services/auth';
 import { Subscription } from 'rxjs';
 
 @Component({
@@ -12,7 +12,7 @@ import { Subscription } from 'rxjs';
 })
 export class Header implements OnInit, OnDestroy {
   currentUser = signal<User | null>(null);
-  authService = inject(Auth);
+  authService = inject(AuthService);
   authSubscription!: Subscription
   router = inject(Router)
 

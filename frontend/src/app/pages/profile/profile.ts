@@ -1,5 +1,5 @@
 import { Component, inject, Input, OnDestroy, OnInit, signal } from '@angular/core';
-import { Auth } from '../../services/auth';
+import { AuthService } from '../../services/auth';
 import { Router } from '@angular/router';
 import { User } from '../../models/auth.model';
 import { reduce, Subscription, switchMap, tap } from 'rxjs';
@@ -17,7 +17,7 @@ import { RouterLink } from '@angular/router';
   styleUrl: './profile.scss',
 })
 export class Profile implements OnInit, OnDestroy {
-  authService = inject(Auth);
+  authService = inject(AuthService);
   router = inject(Router);
   profileService = inject(ProfileService);
   clipService = inject(ClipService);

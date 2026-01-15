@@ -1,10 +1,10 @@
 import { CanActivateFn, Router } from '@angular/router';
 import { inject } from '@angular/core';
-import { Auth } from '../services/auth';
+import { AuthService } from '../services/auth';
 import { filter, map, switchMap, take } from 'rxjs';
 
 export const guestGuard: CanActivateFn = () => {
-  const auth = inject(Auth);
+  const auth = inject(AuthService);
   const router = inject(Router);
 
   return auth.authInitialized$.pipe(

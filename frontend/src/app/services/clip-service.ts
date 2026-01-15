@@ -34,4 +34,8 @@ export class ClipService {
       observe: 'events',
     });
   }
+
+  getClipById(video_id: number): Observable<Clip> {
+    return this.httpClient.get<Clip>(`${this.apiUrl}/api/clips/${video_id}`);
+  }
 }

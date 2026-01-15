@@ -1,12 +1,24 @@
-export interface Comment {
+export interface CommentResponse {
     id: number;
-    videoId: number;
-    commenterId: number;
+    video_id: number;
+    commenter_id: number;
+    commenter_username: string;
     message: string;
     created_at: string;
-    edited_at?: string;
+    edited_at: string | null;
+    parent_comment_id: number | null;
     likes: number;
     dislikes: number;
-    parentCommentId: number | null;
-    replyCount?: number;
+    reply_count: number;
+    is_deleted: boolean;
+}
+
+export interface CommentCreate {
+    video_id: number;
+    message: string;
+    parent_comment_id?: number | null;
+}
+
+export interface CommentUpdate {
+    message: string;
 }

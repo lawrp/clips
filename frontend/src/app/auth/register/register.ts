@@ -1,7 +1,7 @@
 // register.component.ts
 import { Component, inject, signal } from '@angular/core';
 import { FormsModule, NgForm } from '@angular/forms';
-import { Auth } from '../../services/auth';
+import { AuthService } from '../../services/auth';
 import { Router, RouterLink } from '@angular/router';
 
 @Component({
@@ -11,7 +11,7 @@ import { Router, RouterLink } from '@angular/router';
   styleUrl: './register.scss',
 })
 export class Register {
-  authService = inject(Auth);
+  authService = inject(AuthService);
   router = inject(Router);
   
   registerStatus = signal<string>('');

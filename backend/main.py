@@ -136,6 +136,29 @@ async def upload_clip(
     )
     return response
 
+@app.get("/api/clips/{clip_id}", response_model=ClipResponse)
+def get_clip_by_id(clip_id: int, db: Session = Depends(get_db)):
+    clip = db.query(Clip).filter(Clip.id == clip_id).first()
+    
+    if not clip:
+        raise HTTPException(status_code=404, detail="Clip not found")
+    
+    if not os.path.exists(clip.file_path):
+        raise HTTPException(status_code=404, detail="Video file not found")
+    
+    return ClipResponse(
+        id=clip.id,
+        user_id=clip.user_id,
+        filename=clip.filename,
+        file_path=clip.file_path,
+        title=clip.title,
+        description=clip.description,
+        uploaded_at=clip.uploaded_at,
+        file_size=clip.file_size,
+        duration=clip.duration,
+        username=clip.user.username
+    )
+
 @app.get("/api/clips", response_model=List[ClipResponse])
 def get_clips(user_id: int = None, search: str = None, min_duration: int = None, max_duration: int = None, db: Session = Depends(get_db)):
     query = db.query(Clip).join(User)

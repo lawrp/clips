@@ -3,7 +3,7 @@ import { Login } from './auth/login/login';
 import { Register } from './auth/register/register';
 import { Home } from './pages/home/home';
 import { authGuard } from './guards/auth-guard';
-import { Clip } from './pages/clip/clip';
+import { ClipPage } from './pages/clip/clip';
 import { Upload } from './pages/upload/upload';
 import { guestGuard } from './guards/guest-guard';
 import { Profile } from './pages/profile/profile';
@@ -15,7 +15,7 @@ export const routes: Routes = [
 
     { path: 'dashboard', component: Home, title: 'Dashboard', canActivate: [authGuard] },
     { path: 'profile/:username', component: Profile, title: 'My Profile', canActivate: [authGuard] },
-    { path: 'clip/:id', component: Clip, title: 'Clip'},
+    { path: 'clip/:id', component: ClipPage, title: 'Clip'},
     { path: 'upload', component: Upload, title: 'Upload Your Clip', canActivate: [authGuard] },
 
 

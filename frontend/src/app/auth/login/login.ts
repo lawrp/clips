@@ -1,6 +1,6 @@
 import { Component, inject, signal } from '@angular/core';
 import { FormsModule, NgForm } from '@angular/forms';
-import { Auth } from '../../services/auth';
+import { AuthService } from '../../services/auth';
 import { Router } from '@angular/router';
 import { RouterLink } from '@angular/router';
 
@@ -11,7 +11,7 @@ import { RouterLink } from '@angular/router';
   styleUrl: './login.scss',
 })
 export class Login {
-  authService = inject(Auth);
+  authService = inject(AuthService);
   router = inject(Router);
   loginStatus = signal<string>('');
   isSubmitting = signal<boolean>(false);

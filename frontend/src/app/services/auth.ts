@@ -11,16 +11,20 @@ import {
   tap,
 } from 'rxjs';
 import { LoginRequest, RegisterRequest, TokenResponse, User } from '../models/auth.model';
-import { Clip } from '../models/clip.model';
 import { environment } from '../../environments/environment.development';
 
 @Injectable({
   providedIn: 'root',
 })
-export class Auth {
+export class AuthService { // Renamed from Auth
   private httpClient = inject(HttpClient);
   private apiUrl = environment.apiUrl;
 
+  // Signal-based state (new)
+  currentUser = signal<User | null>(null);
+  isAuthenticated = computed(() => !!this.currentUser());
+
+  // Observable-based state (existing - keep for backward compatibility)
   private currentUserSubject = new BehaviorSubject<User | null>(null);
   readonly currentUser$ = this.currentUserSubject.asObservable();
 
@@ -37,14 +41,14 @@ export class Auth {
     const token = localStorage.getItem('token');
 
     if (!token) {
-      this.currentUserSubject.next(null);
+      this.setUser(null);
       this.authInitializedSubject.next(true);
       return;
     }
 
     this.httpClient.get<User>(`${this.apiUrl}/api/users/me`).subscribe({
       next: (user) => {
-        this.currentUserSubject.next(user);
+        this.setUser(user);
         this.authInitializedSubject.next(true);
       },
       error: () => {
@@ -71,7 +75,7 @@ export class Auth {
         }),
         switchMap(() => this.httpClient.get<User>(`${this.apiUrl}/api/users/me`)),
         tap((user) => {
-          this.currentUserSubject.next(user);
+          this.setUser(user);
           this.authInitializedSubject.next(true);
         })
       );
@@ -81,25 +85,18 @@ export class Auth {
     return this.httpClient.post<User>(`${this.apiUrl}/api/register`, data);
   }
 
-  private loadCurrentUser(): void {
-    this.httpClient.get<User>(`${this.apiUrl}/api/users/me`).subscribe({
-      next: (user) => {
-        this.currentUserSubject.next(user);
-        this.authInitializedSubject.next(true);
-      },
-      error: () => {
-        this.clearSession();
-        this.authInitializedSubject.next(true);
-      },
-    });
-  }
-
   logout() {
     this.clearSession();
   }
 
+  // Helper method to update both signal and BehaviorSubject
+  private setUser(user: User | null): void {
+    this.currentUser.set(user);
+    this.currentUserSubject.next(user);
+  }
+
   private clearSession(): void {
     localStorage.removeItem('token');
-    this.currentUserSubject.next(null);
+    this.setUser(null);
   }
 }
