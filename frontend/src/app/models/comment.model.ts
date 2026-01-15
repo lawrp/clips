@@ -11,6 +11,8 @@ export interface CommentResponse {
     dislikes: number;
     reply_count: number;
     is_deleted: boolean;
+    user_has_liked: boolean;
+    user_has_disliked: boolean;
 }
 
 export interface CommentCreate {

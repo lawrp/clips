@@ -56,6 +56,8 @@ class CommentResponse(BaseModel):
     dislikes: int
     reply_count: int
     is_deleted: bool
+    user_has_liked: bool = False
+    user_has_disliked: bool = False
     
     class Config:
         from_attributes = True

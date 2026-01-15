@@ -1,6 +1,7 @@
-import { Component, EventEmitter, inject, Input, Output, signal } from '@angular/core';
+import { Component, EventEmitter, inject, Input, OnInit, Output, signal } from '@angular/core';
 import { CommentResponse } from '../../models/comment.model';
 import { AuthService } from '../../services/auth';
+import { CommentService } from '../../services/comment';
 
 @Component({
   selector: 'app-comment',
@@ -8,16 +9,26 @@ import { AuthService } from '../../services/auth';
   templateUrl: './comment.html',
   styleUrl: './comment.scss',
 })
-export class Comment {
+export class Comment implements OnInit {
   @Input() comment!: CommentResponse;
 
   @Output() delete = new EventEmitter<number>();
   @Output() edit = new EventEmitter<number>();
   @Output() reply = new EventEmitter<number>();
+  @Output() like = new EventEmitter<number>();
+  @Output() dislike = new EventEmitter<number>();
+  commentService = inject(CommentService);
 
   authService: AuthService = inject(AuthService);
   isEditing = signal<boolean>(false);
   showReplyForm = signal<boolean>(false);
+  userHasLiked = signal<boolean>(false);
+  userHasDisliked = signal<boolean>(false);
+
+  ngOnInit() {
+    this.userHasLiked.set(this.comment.user_has_liked);
+    this.userHasDisliked.set(this.comment.user_has_disliked);
+  }
 
   get isOwnComment(): boolean {
     return this.authService.currentUser()?.id === this.comment.commenter_id;
@@ -47,5 +58,13 @@ export class Comment {
 
   onReply() {
     this.showReplyForm.set(!this.showReplyForm());
+  }
+
+  onLike() {
+    this.like.emit(this.comment.id);
+  }
+
+  onDislike() {
+    this.dislike.emit(this.comment.id);
   }
 }

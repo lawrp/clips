@@ -4,17 +4,18 @@ from fastapi.security import OAuth2PasswordRequestForm
 from fastapi.responses import FileResponse
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
-from typing import List
+from typing import List, Optional
 import shutil
 import os
 from uuid import uuid4
 import ffmpeg
 
-from database import get_db
-from models import User, Clip, Comment
+from database import get_db, Base, engine
+from models import User, Clip, Comment, CommentDislike, CommentLike, ClipLike
 from schemas import UserCreate, UserResponse, Token, ClipResponse, CommentResponse, CommentCreate, CommentUpdate
-from auth import hash_password, verify_password, create_access_token, get_current_user
+from auth import hash_password, verify_password, create_access_token, get_current_user, get_current_user_optional
 
+Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
 
@@ -209,7 +210,12 @@ def stream_video(clip_id: int, db: Session = Depends(get_db)):
 
 
 @app.get("/api/clips/{clip_id}/comments", response_model=List[CommentResponse])
-def get_comments(clip_id: int, include_deleted: bool = False, db: Session = Depends(get_db)):
+def get_comments(
+    clip_id: int, 
+    include_deleted: bool = False, 
+    current_user: Optional[User] = Depends(get_current_user_optional), 
+    db: Session = Depends(get_db)
+    ):
     
     clip = db.query(Clip).filter(Clip.id == clip_id).first()
     if not clip:
@@ -235,11 +241,26 @@ def get_comments(clip_id: int, include_deleted: bool = False, db: Session = Depe
             likes=comment.likes,
             dislikes=comment.dislikes,
             reply_count=len([r for r in comment.replies if not r.is_deleted]),
-            is_deleted=comment.is_deleted
+            is_deleted=comment.is_deleted,
+            
+            user_has_liked=(
+                db.query(CommentLike).filter(
+                    CommentLike.user_id == current_user.id,
+                    CommentLike.comment_id == comment.id
+                ).first() is not None
+                if current_user else False
+            ),
+            user_has_disliked=(
+                db.query(CommentDislike).filter(
+                    CommentDislike.user_id == current_user.id,
+                    CommentDislike.comment_id == comment.id
+                ).first() is not None
+                if current_user else False
+            ),
         )
         for comment in comments
     ]
- 
+
 @app.post("/api/comments", response_model=CommentResponse, status_code=status.HTTP_201_CREATED)
 def create_comment(comment: CommentCreate, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     clip = db.query(Clip).filter(Clip.id == comment.video_id).first()
@@ -351,3 +372,121 @@ def delete_comment(
     
     db.commit()
     return None
+
+@app.post("/api/comments/{comment_id}/like")
+def like_comment(
+    comment_id: int,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    comment = db.query(Comment).filter(Comment.id == comment_id).first()
+    if not comment:
+        raise HTTPException(status_code=404, detail="Comment not found")
+    
+    existing_like = db.query(CommentLike).filter(
+        CommentLike.user_id == current_user.id,
+        CommentLike.comment_id == comment_id
+    ).first()
+    
+    if existing_like:
+        
+        db.delete(existing_like)
+        comment.likes -= 1
+        
+    else:
+        existing_dislike = db.query(CommentDislike).filter(
+            CommentDislike.user_id == current_user.id,
+            CommentDislike.comment_id == comment_id
+        ).first()
+        if existing_dislike:
+            db.delete(existing_dislike)
+            comment.dislikes -= 1
+        
+        new_like = CommentLike(user_id=current_user.id, comment_id=comment_id)
+        db.add(new_like)
+        comment.likes += 1
+    
+    db.commit()
+    db.refresh(comment)
+    
+    return {
+        "likes": comment.likes,
+        "dislikes": comment.dislikes,
+        "user_has_liked": existing_like is None,
+        "user_has_disliked": False
+    }
+
+@app.post("/api/comments/{comment_id}/dislike")
+def dislike_comment(
+    comment_id: int,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    comment = db.query(Comment).filter(Comment.id == comment_id).first()
+    if not comment:
+        raise HTTPException(status_code=404, detail="Comment not found")
+    
+    existing_dislike = db.query(CommentDislike).filter(
+        CommentDislike.user_id == current_user.id,
+        CommentDislike.comment_id == comment_id
+    ).first()
+    
+    if existing_dislike:
+        db.delete(existing_dislike)
+        comment.dislikes -= 1
+    else:
+        existing_like = db.query(CommentLike).filter(
+            CommentLike.user_id == current_user.id,
+            CommentLike.comment_id == comment_id
+        ).first()
+        if existing_like:
+            db.delete(existing_like)
+            comment.likes -= 1
+        
+        new_dislike = CommentDislike(user_id=current_user.id, comment_id=comment_id)
+        db.add(new_dislike)
+        comment.dislikes += 1
+        
+    db.commit()
+    db.refresh(comment)
+    
+    return {
+        "likes": comment.likes,
+        "dislikes": comment.dislikes,
+        "user_has_liked": False,
+        "user_has_disliked": existing_dislike is None
+    }
+
+@app.post("/api/clips/{clip_id}/like")
+def like_clip(
+    clip_id: int,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    clip = db.query(Clip).filter(Clip.id == clip_id).first()
+    if not clip:
+        raise HTTPException(status_code=404, detail="Clip not found")
+    
+    existing_like = db.query(ClipLike).filter(
+        ClipLike.user_id == current_user.id,
+        ClipLike.clip_id == clip_id
+    ).first()
+    
+    if existing_like:
+        db.delete(existing_like)
+        clip.likes -= 1
+        user_has_liked = False
+
+    else:
+        new_like = ClipLike(user_id=current_user.id, clip_id=clip_id)
+        db.add(new_like)
+        clip.likes += 1
+        user_has_liked = True
+        
+    db.commit()
+    db.refresh(clip)
+    
+    return {
+        "likes": clip.likes,
+        "user_has_liked": user_has_liked,
+    }

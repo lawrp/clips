@@ -47,6 +47,8 @@
         <app-comment 
           [comment]="comment"
           (delete)="handleDelete($event)"
+          (like)="handleLike($event)"
+          (dislike)="handleDislike($event)"
         ></app-comment>
       }
     } @else {

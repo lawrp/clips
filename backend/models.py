@@ -1,9 +1,7 @@
-from sqlalchemy import Column, Integer, String, DateTime, BigInteger, ForeignKey, Boolean
-from sqlalchemy.ext.declarative import declarative_base
+from database import Base
+from sqlalchemy import Column, Integer, String, DateTime, BigInteger, ForeignKey, Boolean, UniqueConstraint
 from sqlalchemy.orm import relationship
 from datetime import datetime, timezone
-
-Base = declarative_base()
 
 class User(Base):
     __tablename__ = "users"
@@ -15,7 +13,9 @@ class User(Base):
     
     clips = relationship("Clip", back_populates="user")
     comments = relationship("Comment", back_populates="user")
-    
+    comment_likes = relationship("CommentLike", back_populates="user")
+    comment_dislikes = relationship("CommentDislike", back_populates="user")
+    clip_likes = relationship("ClipLike", back_populates="user")
 class Clip(Base):
     __tablename__ = "clips"
     
@@ -28,9 +28,11 @@ class Clip(Base):
     duration = Column(Integer)
     title = Column(String, nullable=False)
     description = Column(String, nullable=True)
+    likes = Column(Integer, default=0, nullable=False)
     
     user = relationship("User", back_populates="clips")
     comments = relationship("Comment", back_populates="clip")
+    likes_relation = relationship("ClipLike", back_populates="clip")
     
 class Comment(Base):
     __tablename__ = "comments"
@@ -49,6 +51,55 @@ class Comment(Base):
     # Relationships
     clip = relationship("Clip", back_populates="comments")
     user = relationship("User", back_populates="comments")
+    likes_relation = relationship("CommentLike", back_populates="comment")
+    dislikes_relation = relationship("CommentDislike", back_populates="comment")
     
     # Self-referential for replies
     parent = relationship("Comment", remote_side=[id], backref="replies")
+    
+
+class CommentLike(Base):
+    __tablename__ = "comment-likes"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    comment_id = Column(Integer, ForeignKey("comments.id"), nullable=False)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+    
+    __table_args__ = (
+        UniqueConstraint('user_id', 'comment_id', name='unique_comment_like'),
+    )
+    
+    user = relationship("User", back_populates="comment_likes")
+    comment = relationship("Comment", back_populates="likes_relation")
+
+class CommentDislike(Base):
+    __tablename__ = "comment_dislikes"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    comment_id = Column(Integer, ForeignKey("comments.id"), nullable=False)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+    
+    __table_args__ = (
+        UniqueConstraint('user_id', 'comment_id', name='unique_comment_dislike'),
+    )
+    
+    user = relationship("User", back_populates="comment_dislikes")
+    comment = relationship("Comment", back_populates="dislikes_relation")
+
+class ClipLike(Base):
+    __tablename__ = "clip_likes"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    clip_id = Column(Integer, ForeignKey("clips.id"), nullable=False)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+    
+    __table_args__ = (
+        UniqueConstraint('user_id', 'clip_id', name='unique_clip_like'),
+    )
+    
+    user = relationship("User", back_populates="clip_likes")
+    clip = relationship("Clip", back_populates="likes_relation")
+    

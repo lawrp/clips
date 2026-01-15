@@ -151,6 +151,14 @@
     display: flex;
     gap: 8px;
     margin-left: auto;
+
+    .footer-btn {
+      &.active {
+        color: #065fd4;
+        font-weight: 600;
+        background-color: #e8f0fe;
+      }
+    }
   }
 }
 

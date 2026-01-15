@@ -42,8 +42,8 @@
     }
 
     <div class="like-dislike">
-      <button class="footer-btn"><span class="icon">👍</span> {{ comment.likes }}</button>
-      <button class="footer-btn"><span class="icon">👎</span> {{ comment.dislikes }}</button>
+      <button class="footer-btn" (click)="onLike()" [class.active]="comment.user_has_liked"><span class="icon">👍</span> {{ comment.likes }}</button>
+      <button class="footer-btn" (click)="onDislike()" [class.active]="comment.user_has_disliked"><span class="icon">👎</span> {{ comment.dislikes }}</button>
     </div>
   </div>
 

@@ -28,4 +28,12 @@ export class CommentService {
   updateComment(commentId: number, commentData: CommentUpdate): Observable<CommentResponse> {
     return this.httpClient.put<CommentResponse>(`${this.apiUrl}/api/comments/${commentId}`, commentData)
   }
+
+  likeComment(commentId: number): Observable<any> {
+    return this.httpClient.post(`${this.apiUrl}/api/comments/${commentId}/like`, {});
+  }
+
+  dislikeComment(commentId: number): Observable<any> {
+    return this.httpClient.post(`${this.apiUrl}/api/comments/${commentId}/dislike`, {});
+  }
 }

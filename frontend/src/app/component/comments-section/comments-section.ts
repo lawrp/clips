@@ -70,4 +70,27 @@ export class CommentsSection implements OnInit {
     })
   }
 
+  handleLike(commentId: number) {
+    this.commentsService.likeComment(commentId).subscribe({
+      next: (res) => {
+        this.loadComments();
+      },
+      error: (err) => {
+        this.snackbarService.show('There was an error liking the comment!', 'error', 3000);
+        console.error(err);
+      }
+    });
+  }
+
+  handleDislike(commentId: number) {
+    this.commentsService.dislikeComment(commentId).subscribe({
+      next: () => {
+        this.loadComments();
+      },
+      error: (err) => {
+        this.snackbarService.show('There was an error disliking the comment!', 'error', 3000);
+        console.error(err);
+      }
+    });
+  }
 }
