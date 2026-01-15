@@ -341,3 +341,48 @@
     }
   }
 }
+
+// upload.component.scss
+
+.file-upload-area {
+  // ... your existing styles ...
+  
+  // Add smooth transition for drag feedback
+  transition: all 0.2s ease;
+  
+  // Dragging state styling
+  &.dragging {
+    border-color: #4CAF50;
+    border-style: dashed;
+    background-color: rgba(76, 175, 80, 0.05);
+    transform: scale(1.02);
+    
+    .upload-text {
+      color: #4CAF50;
+    }
+    
+    .upload-hint {
+      color: #4CAF50;
+    }
+    
+    svg {
+      color: #4CAF50;
+      animation: bounce 0.6s ease infinite;
+    }
+  }
+  
+  // Prevent text selection during drag
+  &.dragging * {
+    pointer-events: none;
+  }
+}
+
+// Optional: Add a subtle bounce animation
+@keyframes bounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
