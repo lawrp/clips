@@ -118,10 +118,14 @@ async def upload_clip(
         title=title,
         description=description
     )
-    
-    db.add(new_clip)
-    db.commit()
-    db.refresh(new_clip)
+    try:
+        db.add(new_clip)
+        db.commit()
+        db.refresh(new_clip)
+    except Exception as e:
+        os.remove(file_path)
+        raise HTTPException(status_code=500, detail="Failed to save clip")
+        
     
     response = ClipResponse(
         id=new_clip.id,
@@ -138,7 +142,7 @@ async def upload_clip(
     return response
 
 @app.get("/api/clips/{clip_id}", response_model=ClipResponse)
-def get_clip_by_id(clip_id: int, db: Session = Depends(get_db)):
+def get_clip_by_id(clip_id: int,  current_user: Optional[User] = Depends(get_current_user_optional), db: Session = Depends(get_db)):
     clip = db.query(Clip).filter(Clip.id == clip_id).first()
     
     if not clip:
@@ -146,6 +150,14 @@ def get_clip_by_id(clip_id: int, db: Session = Depends(get_db)):
     
     if not os.path.exists(clip.file_path):
         raise HTTPException(status_code=404, detail="Video file not found")
+    
+    user_has_liked = False
+    if current_user:
+        user_has_liked = db.query(ClipLike).filter(
+            ClipLike.clip_id == clip_id,
+            ClipLike.user_id == current_user.id
+        ).first() is not None
+        
     
     return ClipResponse(
         id=clip.id,
@@ -157,11 +169,13 @@ def get_clip_by_id(clip_id: int, db: Session = Depends(get_db)):
         uploaded_at=clip.uploaded_at,
         file_size=clip.file_size,
         duration=clip.duration,
-        username=clip.user.username
+        username=clip.user.username,
+        likes=clip.likes,
+        user_has_liked=user_has_liked
     )
 
 @app.get("/api/clips", response_model=List[ClipResponse])
-def get_clips(user_id: int = None, search: str = None, min_duration: int = None, max_duration: int = None, db: Session = Depends(get_db)):
+def get_clips(user_id: int = None, search: str = None, min_duration: int = None, max_duration: int = None, skip: int = 0, limit: int = 20, db: Session = Depends(get_db)):
     query = db.query(Clip).join(User)
     
     if user_id:
@@ -177,7 +191,7 @@ def get_clips(user_id: int = None, search: str = None, min_duration: int = None,
         query = query.filter(Clip.duration <= max_duration)
     
     
-    clips = query.order_by(Clip.uploaded_at.asc()).all()
+    clips = query.order_by(Clip.uploaded_at.desc()).offset(skip).limit(limit).all()
     
     return [
         ClipResponse(
@@ -240,7 +254,7 @@ def get_comments(
             parent_comment_id=comment.parent_comment_id,
             likes=comment.likes,
             dislikes=comment.dislikes,
-            reply_count=len([r for r in comment.replies if not r.is_deleted]),
+            reply_count=len([r for r in comment.replies if not r.is_deleted]) if comment.replies else 0,
             is_deleted=comment.is_deleted,
             
             user_has_liked=(
@@ -301,7 +315,9 @@ def create_comment(comment: CommentCreate, current_user: User = Depends(get_curr
         likes=new_comment.likes,
         dislikes=new_comment.dislikes,
         reply_count=0,  
-        is_deleted=new_comment.is_deleted
+        is_deleted=new_comment.is_deleted,
+        user_has_liked=False,
+        user_has_disliked=False
     )
     
 @app.put("/api/comments/{comment_id}", response_model=CommentResponse)

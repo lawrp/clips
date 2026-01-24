@@ -1,7 +1,7 @@
 import { HttpClient, HttpEvent } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { environment } from '../../environments/environment.development';
-import { Clip } from '../models/clip.model';
+import { Clip, ClipLikeResponse } from '../models/clip.model';
 import { Observable } from 'rxjs';
 
 @Injectable({
@@ -37,5 +37,9 @@ export class ClipService {
 
   getClipById(video_id: number): Observable<Clip> {
     return this.httpClient.get<Clip>(`${this.apiUrl}/api/clips/${video_id}`);
+  }
+
+  likeClipById(video_id: number): Observable<ClipLikeResponse> {
+    return this.httpClient.post<ClipLikeResponse>(`${this.apiUrl}/api/clips/${video_id}/like`, {})
   }
 }

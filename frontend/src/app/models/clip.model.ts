@@ -9,10 +9,17 @@ export interface Clip {
     file_size: number;
     duration: number | null;
     username: string;
+    likes: number;
+    user_has_liked: boolean
 }
 
 export interface ClipUploadRequest {
     title: string;
     description?: string;
     file: File;
+}
+
+export interface ClipLikeResponse {
+    likes: number;
+    user_has_liked: boolean
 }

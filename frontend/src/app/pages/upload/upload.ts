@@ -145,9 +145,7 @@ export class Upload {
       const message = this.isSingleUpload ? 'Clip uploaded successfully!' :
       `Successfully uploaded ${files.length} clips!`;
       this.snackbarService.show(message, 'success');
-      setTimeout(() => {
-        this.goToProfile();
-      }, 2000);
+      this.goToProfile();
       return;
     }
 

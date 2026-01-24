@@ -19,6 +19,9 @@ export class ClipPage implements OnInit {
 
   clipService: ClipService = inject(ClipService);
   snackbarService: SnackbarService = inject(SnackbarService);
+  editTitle = signal<boolean>(false);
+  user_has_liked = signal<boolean>(false);
+  clipLikes = signal<number | null>(null);
   
   get clipId(): number {
     return +this.id;
@@ -30,10 +33,23 @@ export class ClipPage implements OnInit {
     this.clipService.getClipById(this.clipId).subscribe({
       next: (clip) => {
         this.clip.set(clip);
+        this.clipLikes.set(clip.likes);
       },
       error: (err) => {
         console.error(err);
         this.snackbarService.show('There was an error fetching the clip details...', 'error', 3000);
+      }
+    })
+  }
+
+  onEditTitle() {
+    this.editTitle.set(true);
+  }
+
+  onLikeClip() {
+    this.clipService.likeClipById(this.clipId).subscribe({
+      next: () => {
+        
       }
     })
   }

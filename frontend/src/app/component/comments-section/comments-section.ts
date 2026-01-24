@@ -1,5 +1,5 @@
 import { Component, inject, Input, OnInit, signal } from '@angular/core';
-import { CommentResponse, CommentCreate } from '../../models/comment.model';
+import { CommentResponse, CommentCreate, CommentUpdate} from '../../models/comment.model';
 import { CommentService } from '../../services/comment';
 import { Comment } from '../comment/comment';
 import { FormsModule } from '@angular/forms';
@@ -91,6 +91,32 @@ export class CommentsSection implements OnInit {
         this.snackbarService.show('There was an error disliking the comment!', 'error', 3000);
         console.error(err);
       }
+    });
+  }
+
+  handleEdit(comment: CommentResponse) {
+    
+    this.commentsService.updateComment(comment.id, { "message": comment.message }).subscribe({
+      next: () => {
+        this.loadComments();
+        this.snackbarService.show('Comment was updated successfully!', 'success', 3000);
+      },
+      error: (err) => {
+        this.snackbarService.show("There was an error updating comment!", 'error', 3000);
+      }
+    })
+  }
+
+  handleReply(reply: CommentCreate) {
+    this.commentsService.createComment(reply).subscribe({
+      next: () => {
+        this.loadComments();
+        this.snackbarService.show('Reply posted successfully!', 'success', 3000);
+      },
+      error: (err) => {
+        console.error('Error posting reply:', err);
+        this.snackbarService.show('Error posting reply', 'error', 3000);
+      } 
     });
   }
 }

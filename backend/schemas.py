@@ -32,6 +32,8 @@ class ClipResponse(BaseModel):
     username: str
     title: str
     description: Optional[str] = None
+    likes: int
+    user_has_liked: bool = False
     
     class Config:
         from_attributes = True

@@ -1,11 +1,11 @@
 import { Component, EventEmitter, inject, Input, OnInit, Output, signal } from '@angular/core';
-import { CommentResponse } from '../../models/comment.model';
+import { CommentResponse, CommentCreate } from '../../models/comment.model';
 import { AuthService } from '../../services/auth';
-import { CommentService } from '../../services/comment';
+import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-comment',
-  imports: [],
+  imports: [FormsModule],
   templateUrl: './comment.html',
   styleUrl: './comment.scss',
 })
@@ -13,21 +13,25 @@ export class Comment implements OnInit {
   @Input() comment!: CommentResponse;
 
   @Output() delete = new EventEmitter<number>();
-  @Output() edit = new EventEmitter<number>();
-  @Output() reply = new EventEmitter<number>();
+  @Output() edit = new EventEmitter<CommentResponse>();
+  @Output() reply = new EventEmitter<CommentCreate>();
   @Output() like = new EventEmitter<number>();
   @Output() dislike = new EventEmitter<number>();
-  commentService = inject(CommentService);
 
   authService: AuthService = inject(AuthService);
   isEditing = signal<boolean>(false);
+  isSubmitting = signal<boolean>(false);
+  commentMessage = signal<string>('');
   showReplyForm = signal<boolean>(false);
   userHasLiked = signal<boolean>(false);
   userHasDisliked = signal<boolean>(false);
+  replyMessage = signal<string>('');
+  
 
   ngOnInit() {
     this.userHasLiked.set(this.comment.user_has_liked);
     this.userHasDisliked.set(this.comment.user_has_disliked);
+    this.commentMessage.set(this.comment.message);
   }
 
   get isOwnComment(): boolean {
@@ -53,10 +57,11 @@ export class Comment implements OnInit {
   }
 
   onEdit() {
-    this.isEditing.set(true);
+    this.isEditing.set(!this.isEditing());
   }
 
   onReply() {
+    this.replyMessage.set('');
     this.showReplyForm.set(!this.showReplyForm());
   }
 
@@ -66,5 +71,34 @@ export class Comment implements OnInit {
 
   onDislike() {
     this.dislike.emit(this.comment.id);
+  }
+
+  onPostEdit() {
+    this.comment.message = this.commentMessage();
+    this.edit.emit(this.comment);
+    this.onEdit();
+  }
+
+  onCancelEdit() {
+    this.commentMessage.set(this.comment.message);
+    this.onEdit();
+  }
+
+  onPostReply() {
+    const message = this.replyMessage().trim();
+
+    if (!message) {
+      return;
+    }
+
+    this.isSubmitting.set(true);
+
+    const newReply: CommentCreate = {
+      video_id: this.comment.video_id,
+      message: message,
+      parent_comment_id: this.comment.id
+    }
+
+    this.reply.emit(newReply);
   }
 }
