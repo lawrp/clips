@@ -7,10 +7,12 @@ import { ClipPage } from './pages/clip/clip';
 import { Upload } from './pages/upload/upload';
 import { guestGuard } from './guards/guest-guard';
 import { Profile } from './pages/profile/profile';
+import { RecoverPage } from './auth/recover-page/recover-page';
 
 export const routes: Routes = [
     { path: 'login', component: Login, title: 'Login Page', canActivate: [guestGuard] },
     { path: 'register', component: Register, title: 'Register Page', canActivate: [guestGuard] },
+    { path: 'recover', component: RecoverPage, title: 'Revovery page', canActivate: [guestGuard] },
 
 
     { path: 'dashboard', component: Home, title: 'Dashboard', canActivate: [authGuard] },

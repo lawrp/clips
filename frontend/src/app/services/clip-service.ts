@@ -1,7 +1,7 @@
 import { HttpClient, HttpEvent } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { environment } from '../../environments/environment.development';
-import { Clip, ClipLikeResponse } from '../models/clip.model';
+import { Clip, ClipLikeResponse, ClipUpdate } from '../models/clip.model';
 import { Observable } from 'rxjs';
 
 @Injectable({
@@ -41,5 +41,13 @@ export class ClipService {
 
   likeClipById(video_id: number): Observable<ClipLikeResponse> {
     return this.httpClient.post<ClipLikeResponse>(`${this.apiUrl}/api/clips/${video_id}/like`, {})
+  }
+
+  updateClipById(clipUpdate: ClipUpdate, video_id: number) {
+    return this.httpClient.patch<Clip>(`${this.apiUrl}/api/clips/${video_id}`, clipUpdate)
+  }
+
+  deleteClipById(video_id: number) {
+    return this.httpClient.delete<void>(`${this.apiUrl}/api/clips/${video_id}`);
   }
 }

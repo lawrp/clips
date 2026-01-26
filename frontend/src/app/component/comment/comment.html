@@ -61,7 +61,7 @@
     <button class="footer-btn" (click)="onReply()"><span class="icon">💬</span> Reply</button>
 
     @if (comment.reply_count > 0) {
-    <span class="reply-count"
+    <span class="reply-count" (click)="toggleReplies()"
       >{{ comment.reply_count }} {{ comment.reply_count === 1 ? 'reply' : 'replies' }}
     </span>
     }
@@ -76,7 +76,20 @@
     </div>
   </div>
 
-  @if (showReplyForm()) {
+  @if (showReplies()) {
+  <div class="replies-container">
+    @for (replyComment of replies(); track replyComment.id) {
+    <app-comment
+      [comment]="replyComment"
+      (delete)="handleReplyDelete($event)"
+      (edit)="handleReplyEdit($event)"
+      (reply)="handleReplyCreate($event)"
+      (like)="handleReplyLike($event)"
+      (dislike)="handleReplyDislike($event)"
+    />
+    }
+  </div>
+  } @if (showReplyForm()) {
   <div class="reply-form">
     <textarea
       class="reply-input"

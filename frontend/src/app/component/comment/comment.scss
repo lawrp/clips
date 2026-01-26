@@ -2,6 +2,7 @@
   padding: 16px;
   border-bottom: 1px solid #e0e0e0;
   transition: background-color 0.2s;
+  position: relative;
 
   &:hover {
     background-color: #f9f9f9;
@@ -10,6 +11,66 @@
   &.deleted {
     opacity: 0.6;
     background-color: #fafafa;
+  }
+}
+
+.replies-container {
+  margin-left: 52px;
+  margin-top: 12px;
+  border-left: 2px solid #e0e0e0;
+  padding-left: 16px;
+  position: relative;
+
+  // Add a subtle gradient fade at the top
+  &::before {
+    content: '';
+    position: absolute;
+    left: -2px;
+    top: 0;
+    width: 2px;
+    height: 20px;
+    background: linear-gradient(to bottom, transparent, #e0e0e0);
+  }
+
+  .comment-container {
+    padding: 12px 0 12px 12px;
+    border-bottom: 1px solid #f0f0f0;
+    background-color: #fafafa;
+
+    &:hover {
+      background-color: #f5f5f5;
+    }
+
+    &:first-child {
+      padding-top: 16px;
+    }
+
+    &:last-child {
+      border-bottom: none;
+      padding-bottom: 16px;
+    }
+
+    // Nested reply indicator
+    &::before {
+      content: '↳';
+      position: absolute;
+      left: -10px;
+      top: 20px;
+      color: #909090;
+      font-size: 16px;
+    }
+
+    // Adjust nested comment spacing
+    .comment-body,
+    .comment-footer,
+    .reply-form {
+      margin-left: 44px;
+    }
+
+    .comment-header .user-avatar {
+      width: 32px;
+      height: 32px;
+    }
   }
 }
 
@@ -29,7 +90,7 @@
 
   .comment-info {
     flex: 1;
-    min-width: 0; // Allows text truncation
+    min-width: 0;
   }
 
   .user-details {
@@ -89,7 +150,7 @@
 }
 
 .comment-body {
-  margin-left: 52px; // Align with username (40px avatar + 12px gap)
+  margin-left: 52px;
   margin-bottom: 8px;
 
   .message {
@@ -141,6 +202,7 @@
     font-size: 13px;
     color: #065fd4;
     cursor: pointer;
+    font-weight: 500;
     
     &:hover {
       text-decoration: underline;
@@ -239,6 +301,11 @@
   .comment-body,
   .comment-footer,
   .reply-form {
-    margin-left: 44px; // Adjust for smaller avatar
+    margin-left: 44px;
+  }
+
+  .replies-container {
+    margin-left: 32px;
+    padding-left: 12px;
   }
 }

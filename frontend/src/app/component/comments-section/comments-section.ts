@@ -17,6 +17,7 @@ export class CommentsSection implements OnInit {
   @Input() clipId!: number;
 
   comments = signal<CommentResponse[]>([]);
+  replies = signal<CommentResponse[]>([]);
   commentMessage = signal<string>('');
   isSubmitting = signal<boolean>(false);
 
@@ -30,7 +31,7 @@ export class CommentsSection implements OnInit {
 
   loadComments() {
     this.commentsService.getCommentsByVideoId(this.clipId).subscribe(comments => {
-      this.comments.set(comments);
+      this.comments.set(comments.filter((comment) => !comment.parent_comment_id));
     });
   };
 

@@ -1,9 +1,10 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, EmailStr
 from datetime import datetime
 from typing import Optional
 
 class UserCreate(BaseModel):
     username: str
+    email: str
     password: str
     
 class UserResponse(BaseModel):
@@ -41,6 +42,11 @@ class ClipResponse(BaseModel):
             datetime: lambda dt: dt.isoformat() + 'Z' if dt.tzinfo is None else dt.isoformat()
         }
 
+
+class ClipUpdate(BaseModel):
+    title: Optional[str] = None
+    description: Optional[str] = None
+
 class ClipUpload(BaseModel):
     title: str
     description: Optional[str] = None
@@ -74,3 +80,6 @@ class CommentCreate(BaseModel):
     
 class CommentUpdate(BaseModel):
     message: str
+
+class EmailRequest(BaseModel):
+    email: EmailStr

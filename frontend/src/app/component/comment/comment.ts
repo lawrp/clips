@@ -2,6 +2,7 @@ import { Component, EventEmitter, inject, Input, OnInit, Output, signal } from '
 import { CommentResponse, CommentCreate } from '../../models/comment.model';
 import { AuthService } from '../../services/auth';
 import { FormsModule } from '@angular/forms';
+import { CommentService } from '../../services/comment';
 
 @Component({
   selector: 'app-comment',
@@ -19,6 +20,8 @@ export class Comment implements OnInit {
   @Output() dislike = new EventEmitter<number>();
 
   authService: AuthService = inject(AuthService);
+  commentsService: CommentService = inject(CommentService);
+
   isEditing = signal<boolean>(false);
   isSubmitting = signal<boolean>(false);
   commentMessage = signal<string>('');
@@ -26,7 +29,9 @@ export class Comment implements OnInit {
   userHasLiked = signal<boolean>(false);
   userHasDisliked = signal<boolean>(false);
   replyMessage = signal<string>('');
-  
+
+  showReplies = signal<boolean>(false);
+  replies = signal<CommentResponse[]>([]);
 
   ngOnInit() {
     this.userHasLiked.set(this.comment.user_has_liked);
@@ -42,12 +47,25 @@ export class Comment implements OnInit {
     const now = new Date();
     const commentDate = new Date(this.comment.created_at);
     const seconds = Math.floor((now.getTime() - commentDate.getTime()) / 1000);
-    
+
     if (seconds < 60) return 'just now';
     if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`;
     if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`;
     if (seconds < 604800) return `${Math.floor(seconds / 86400)}d ago`;
     return commentDate.toLocaleDateString();
+  }
+
+  toggleReplies() {
+    if (!this.showReplies() && this.replies().length === 0) {
+      this.loadReplies();
+    }
+    this.showReplies.set(!this.showReplies());
+  }
+
+  loadReplies() {
+    this.commentsService.getCommentsByVideoId(this.comment.video_id).subscribe((comments) => {
+      this.replies.set(comments.filter((c) => c.parent_comment_id === this.comment.id));
+    });
   }
 
   onDelete() {
@@ -96,9 +114,57 @@ export class Comment implements OnInit {
     const newReply: CommentCreate = {
       video_id: this.comment.video_id,
       message: message,
-      parent_comment_id: this.comment.id
-    }
+      parent_comment_id: this.comment.id,
+    };
 
     this.reply.emit(newReply);
+    this.isSubmitting.set(false);
+    this.replyMessage.set('');
+    this.showReplyForm.set(false);
+  }
+
+  handleReplyLike(commentId: number) {
+    this.like.emit(commentId);
+    setTimeout(() => {
+      if (this.showReplies()) {
+        this.loadReplies();
+      }
+    }, 50);
+  }
+
+  handleReplyDislike(commentId: number) {
+    this.dislike.emit(commentId);
+    setTimeout(() => {
+      if (this.showReplies()) {
+        this.loadReplies();
+      }
+    }, 50);
+  }
+
+  handleReplyCreate(newReply: CommentCreate) {
+    this.reply.emit(newReply);
+    setTimeout(() => {
+      if (this.showReplies()) {
+        this.loadReplies();
+      }
+    }, 200);
+  }
+
+  handleReplyEdit(editedComment: CommentResponse) {
+    this.edit.emit(editedComment);
+    setTimeout(() => {
+      if (this.showReplies()) {
+        this.loadReplies();
+      }
+    }, 200);
+  }
+
+  handleReplyDelete(commentId: number) {
+    this.delete.emit(commentId);
+    setTimeout(() => {
+      if (this.showReplies()) {
+        this.loadReplies();
+      }
+    }, 200);
   }
 }

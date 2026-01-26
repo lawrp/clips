@@ -36,7 +36,7 @@
     <div class="section-header">
       <h2>Clips</h2>
       <div class="controls">
-        <select class="sort-dropdown">
+        <select class="sort-dropdown" [(ngModel)]="sortOption" (change)="sortByValue()">
           <option value="newest">Newest First</option>
           <option value="oldest">Oldest First</option>
           <option value="longest">Longest</option>
@@ -55,8 +55,15 @@
           <div class="duration-badge">{{ clip.duration }}s</div>
         </div>
         <div class="clip-info">
-          <h3 (click)="navigateToClip(clip.id)">{{ clip.title }}</h3>
-          <p class="clip-meta">{{ clip.uploaded_at | date : 'short' }}</p>
+          <div class="clip-text">
+            <h3 (click)="navigateToClip(clip.id)">{{ clip.title }}</h3>
+            <p class="clip-meta">{{ clip.uploaded_at | date : 'short' }}</p>
+          </div>
+          @if (isProfileOwner) {
+          <button type="button" (click)="handleDelete(clip.id)" class="delete-clip-button">
+            🗑️
+          </button>
+          }
         </div>
       </div>
       } @if (clips().length === 0) {

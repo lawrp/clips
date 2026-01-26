@@ -1,0 +1,66 @@
+<div class="auth-container">
+  <div class="landing-header">
+    <div class="logo-placeholder">
+      <!-- You can add an actual logo/icon here later -->
+      <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path
+          d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        />
+      </svg>
+    </div>
+    <h1>Account Recovery Page</h1>
+    <p>Need help recovering your account? Choose an option below.</p>
+  </div>
+
+
+  <div class="login-form">
+    @if (!usernameOption() && !passwordOption()) {
+        <div class="recovery-option-buttons">
+            <button class="username-recovery-button" type="button" (click)="toggleUsernameRecovery()">
+                Recover Username
+            </button>
+            <button class="password-recovery-button" type="button" (click)="togglePasswordRecovery()">
+                Recover Password
+            </button>
+        </div>
+    }
+
+    @if (usernameOption()) {
+    <form (ngSubmit)="recoverUsername(usernameForm)" #usernameForm="ngForm">
+      <h2>Recover Username</h2>
+
+      <div class="form-group">
+        <label for="email">Email</label>
+        <input
+          type="email"
+          id="email"
+          name="email"
+          [(ngModel)]="email"
+          required
+          minlength="4"
+          maxlength="30"
+          placeholder="Enter the email linked to account" 
+          #emailInput="ngModel"
+        />
+      </div>
+
+      <div class="form-actions">
+        <button type="submit" [disabled]="usernameForm.invalid || isSubmitting()">
+          @if (isSubmitting()) {
+          <span class="spinner"></span>
+          Recovering... } @else { Submit }
+        </button>
+      </div>
+
+      <div class="form-footer">
+        <p>Don't have an account? <a routerLink="/register">Create one</a></p>
+        <p>Can't login? <a routerLink="/recover">Recover Account</a></p>
+      </div>
+    </form>
+    }
+  </div>
+</div>

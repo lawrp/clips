@@ -1,6 +1,6 @@
 from database import Base
 from sqlalchemy import Column, Integer, String, DateTime, BigInteger, ForeignKey, Boolean, UniqueConstraint
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, backref
 from datetime import datetime, timezone
 
 class User(Base):
@@ -8,14 +8,15 @@ class User(Base):
     
     id = Column(Integer, primary_key=True, index=True)
     username = Column(String, unique=True, index=True, nullable=False)
+    email = Column(String, unique=True, index=True, nullable=False)
     password_hash = Column(String, nullable=False)
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
     
-    clips = relationship("Clip", back_populates="user")
-    comments = relationship("Comment", back_populates="user")
-    comment_likes = relationship("CommentLike", back_populates="user")
-    comment_dislikes = relationship("CommentDislike", back_populates="user")
-    clip_likes = relationship("ClipLike", back_populates="user")
+    clips = relationship("Clip", back_populates="user", cascade="all, delete-orphan")
+    comments = relationship("Comment", back_populates="user", cascade="all, delete-orphan")
+    comment_likes = relationship("CommentLike", back_populates="user", cascade="all, delete-orphan")
+    comment_dislikes = relationship("CommentDislike", back_populates="user", cascade="all, delete-orphan")
+    clip_likes = relationship("ClipLike", back_populates="user", cascade="all, delete-orphan")
 class Clip(Base):
     __tablename__ = "clips"
     
@@ -31,8 +32,8 @@ class Clip(Base):
     likes = Column(Integer, default=0, nullable=False)
     
     user = relationship("User", back_populates="clips")
-    comments = relationship("Comment", back_populates="clip")
-    likes_relation = relationship("ClipLike", back_populates="clip")
+    comments = relationship("Comment", back_populates="clip", cascade="all, delete-orphan")
+    likes_relation = relationship("ClipLike", back_populates="clip", cascade="all, delete-orphan")
     
 class Comment(Base):
     __tablename__ = "comments"
@@ -51,11 +52,11 @@ class Comment(Base):
     # Relationships
     clip = relationship("Clip", back_populates="comments")
     user = relationship("User", back_populates="comments")
-    likes_relation = relationship("CommentLike", back_populates="comment")
-    dislikes_relation = relationship("CommentDislike", back_populates="comment")
+    likes_relation = relationship("CommentLike", back_populates="comment", cascade="all, delete-orphan")
+    dislikes_relation = relationship("CommentDislike", back_populates="comment", cascade="all, delete-orphan")
     
     # Self-referential for replies
-    parent = relationship("Comment", remote_side=[id], backref="replies")
+    parent = relationship("Comment", remote_side=[id], backref=backref("replies", cascade="all, delete-orphan"))
     
 
 class CommentLike(Base):

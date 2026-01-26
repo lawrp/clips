@@ -12,8 +12,9 @@ import ffmpeg
 
 from database import get_db, Base, engine
 from models import User, Clip, Comment, CommentDislike, CommentLike, ClipLike
-from schemas import UserCreate, UserResponse, Token, ClipResponse, CommentResponse, CommentCreate, CommentUpdate
+from schemas import UserCreate, UserResponse, Token, ClipResponse, CommentResponse, CommentCreate, CommentUpdate, ClipUpdate, EmailRequest
 from auth import hash_password, verify_password, create_access_token, get_current_user, get_current_user_optional
+from email_service import send_username_recovery_email
 
 Base.metadata.create_all(bind=engine)
 
@@ -65,8 +66,13 @@ def register(user: UserCreate, db: Session = Depends(get_db)):
     if existing_user:
         raise HTTPException(status_code=400, detail="Username already exists")
     
+    existing_email = db.query(User).filter(User.email == user.username).first()
+    if existing_email:
+        raise HTTPException(status_code=400, detail="Email already exists")
+    
+    
     hashed_pw = hash_password(user.password)
-    new_user = User(username=user.username, password_hash=hashed_pw)
+    new_user = User(username=user.username, email=user.email, password_hash=hashed_pw)
     db.add(new_user)
     db.commit()
     db.refresh(new_user)
@@ -137,14 +143,16 @@ async def upload_clip(
         uploaded_at=new_clip.uploaded_at,
         file_size=new_clip.file_size,
         duration=new_clip.duration,
-        username=current_user.username
+        username=current_user.username,
+        likes=new_clip.likes,
+        user_has_liked=False
     )
     return response
 
 @app.get("/api/clips/{clip_id}", response_model=ClipResponse)
 def get_clip_by_id(clip_id: int,  current_user: Optional[User] = Depends(get_current_user_optional), db: Session = Depends(get_db)):
     clip = db.query(Clip).filter(Clip.id == clip_id).first()
-    
+
     if not clip:
         raise HTTPException(status_code=404, detail="Clip not found")
     
@@ -175,7 +183,8 @@ def get_clip_by_id(clip_id: int,  current_user: Optional[User] = Depends(get_cur
     )
 
 @app.get("/api/clips", response_model=List[ClipResponse])
-def get_clips(user_id: int = None, search: str = None, min_duration: int = None, max_duration: int = None, skip: int = 0, limit: int = 20, db: Session = Depends(get_db)):
+def get_clips(user_id: int = None, search: str = None, min_duration: int = None, max_duration: int = None, 
+               current_user: Optional[User] = Depends(get_current_user_optional), skip: int = 0, limit: int = 20, db: Session = Depends(get_db)):
     query = db.query(Clip).join(User)
     
     if user_id:
@@ -204,7 +213,15 @@ def get_clips(user_id: int = None, search: str = None, min_duration: int = None,
             uploaded_at=clip.uploaded_at,
             file_size=clip.file_size,
             duration=clip.duration,
-            username=clip.user.username
+            username=clip.user.username,
+            likes=clip.likes,
+            user_has_liked=(
+                db.query(ClipLike).filter(
+                    ClipLike.clip_id == clip.id,
+                    ClipLike.user_id == current_user.id
+                ).first() is not None
+                if current_user else False
+            )
         )
         for clip in clips
         if os.path.exists(clip.file_path)
@@ -220,7 +237,15 @@ def stream_video(clip_id: int, db: Session = Depends(get_db)):
     if not os.path.exists(clip.file_path):
         raise HTTPException(status_code=404, detail="Video file not found")
     
-    return FileResponse(clip.file_path, media_type="video/mp4")
+    return FileResponse(
+        clip.file_path, 
+        media_type="video/mp4", 
+        headers={
+          "Cache-Control": "no-cache, no-store, must-revalidate",
+          "Pragma": "no-cache",
+          "Expires": "0"
+        }
+    )
 
 
 @app.get("/api/clips/{clip_id}/comments", response_model=List[CommentResponse])
@@ -506,3 +531,83 @@ def like_clip(
         "likes": clip.likes,
         "user_has_liked": user_has_liked,
     }
+
+@app.patch("/api/clips/{clip_id}", response_model=ClipResponse)
+def update_clip_data(clip_id: int, clip_update: ClipUpdate, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    
+    clip = db.query(Clip).filter(Clip.id == clip_id).first()
+    
+    if not clip:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Clip not found")
+    
+    if clip.user_id != current_user.id:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="User is not the owner of this clip")
+    
+    if clip_update.title is not None:
+        clip.title = clip_update.title
+        
+    if clip_update.description is not None:
+        clip.description = clip_update.description
+    
+    db.commit()
+    db.refresh(clip)
+    
+    user_has_liked = db.query(ClipLike).filter(
+        ClipLike.clip_id == clip_id,
+        ClipLike.user_id == current_user.id
+    ).first() is not None
+    
+    return ClipResponse(
+        id=clip.id,
+        user_id=clip.user_id,
+        filename=clip.filename,
+        file_path=clip.file_path,
+        title=clip.title,
+        description=clip.description,
+        uploaded_at=clip.uploaded_at,
+        file_size=clip.file_size,
+        duration=clip.duration,
+        username=clip.user.username,
+        likes=clip.likes,
+        user_has_liked=user_has_liked
+    )
+        
+@app.delete("/api/clips/{clip_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_clip(clip_id: int,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)):
+    
+    clip = db.query(Clip).filter(Clip.id == clip_id).first()
+    
+    if not clip:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Clip was not found!")
+    
+    if clip.user_id != current_user.id:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="User does not have permission to delete this clip.")
+    
+    if os.path.exists(clip.file_path):
+        try:
+            os.remove(clip.file_path)
+            print(f"Successfully deleted file at: {clip.file_path}")
+        except Exception as e:
+            print(f"Error deleting file: {e}")
+    
+    db.delete(clip)
+    db.commit()
+    
+    return None
+
+@app.post("/api/recover-username")
+def recover_username(request: EmailRequest, db: Session = Depends(get_db)):
+    user = db.query(User).filter(user.email == request.email).first()
+    
+    if not user:
+        return {"message", "If that email exists, we've sent a recovery email"}
+    
+    success = send_username_recovery_email(user.email, user.username)
+    
+    if not success:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Failed to send email")
+    
+    return {"message": "If that email exists, we've send a recovery email"}
+    
