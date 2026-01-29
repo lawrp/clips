@@ -1,0 +1,68 @@
+// profile-picture.component.scss
+
+.profile-picture-link {
+  text-decoration: none;
+  display: inline-block;
+  transition: transform 0.2s ease;
+
+  &:hover {
+    transform: scale(1.05);
+  }
+}
+
+.profile-picture {
+  border-radius: 50%;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--input-bg);
+  flex-shrink: 0;
+
+  &.bordered {
+    border: 2px solid var(--color-primary);
+  }
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  &.size-small {
+    width: 32px;
+    height: 32px;
+
+    &.bordered {
+      border-width: 2px;
+    }
+  }
+
+  &.size-medium {
+    width: 48px;
+    height: 48px;
+
+    &.bordered {
+      border-width: 2px;
+    }
+  }
+
+  &.size-large {
+    width: 80px;
+    height: 80px;
+
+    &.bordered {
+      border-width: 3px;
+    }
+  }
+
+  &.size-xlarge {
+    width: 120px;
+    height: 120px;
+
+    &.bordered {
+      border-width: 4px;
+    }
+  }
+}

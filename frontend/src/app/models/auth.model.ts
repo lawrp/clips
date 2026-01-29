@@ -1,9 +1,13 @@
+import { UserRole } from "./roles.model";
+
 export interface User {
     id: number;
     username: string;
     email: string;
     created_at: string;
     profile_picture_url: string | null;
+    role: UserRole;
+    approved: boolean;
 }
 
 export interface LoginRequest {

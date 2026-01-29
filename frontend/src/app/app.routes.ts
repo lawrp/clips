@@ -9,6 +9,8 @@ import { guestGuard } from './guards/guest-guard';
 import { Profile } from './pages/profile/profile';
 import { RecoverPage } from './auth/recover-page/recover-page';
 import { ResetPassword } from './auth/reset-password/reset-password';
+import { AdminPanel } from './pages/admin-panel/admin-panel';
+import { adminGuard } from './guards/admin-guard-guard';
 
 export const routes: Routes = [
     { path: 'login', component: Login, title: 'Login Page', canActivate: [guestGuard] },
@@ -20,7 +22,7 @@ export const routes: Routes = [
     { path: 'profile/:username', component: Profile, title: 'My Profile', canActivate: [authGuard] },
     { path: 'clip/:id', component: ClipPage, title: 'Clip'},
     { path: 'upload', component: Upload, title: 'Upload Your Clip', canActivate: [authGuard] },
-
+    { path: 'admin', component: AdminPanel, title: 'Admin Panel', canActivate: [adminGuard] },
 
     { path: '', redirectTo: '/login', pathMatch: 'full' }
 ];

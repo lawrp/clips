@@ -14,7 +14,7 @@ import ffmpeg
 
 from database import get_db, Base, engine
 from models import User, Clip, Comment, CommentDislike, CommentLike, ClipLike
-from schemas import UserCreate, UserResponse, Token, ClipResponse, CommentResponse, CommentCreate, CommentUpdate, ClipUpdate, PasswordRequest, PasswordResetRequest, EmailRequest, ProfilePictureResponse
+from schemas import UserCreate, UserResponse, Token, ClipResponse, CommentResponse, CommentCreate, CommentUpdate, ClipUpdate, PasswordRequest, PasswordResetRequest, EmailRequest, ProfilePictureResponse, UserRole
 from auth import hash_password, verify_password, create_access_token, get_current_user, get_current_user_optional
 from email_service import send_username_recovery_email, send_password_recovery_email, generate_reset_token
 from image_utils import save_profile_picture, delete_profile_picture_file
@@ -86,14 +86,14 @@ def register(user: UserCreate, db: Session = Depends(get_db)):
     if existing_user:
         raise HTTPException(status_code=400, detail="Username already exists")
     
-    existing_email = db.query(User).filter(User.email == user.username).first()
+    existing_email = db.query(User).filter(User.email == user.email).first()
     if existing_email:
         raise HTTPException(status_code=400, detail="Email already exists")
     
     
     
     hashed_pw = hash_password(user.password)
-    new_user = User(username=user.username, email=user.email, password_hash=hashed_pw)
+    new_user = User(username=user.username, email=user.email, password_hash=hashed_pw, role=UserRole.USER, approved=False)
     db.add(new_user)
     db.commit()
     db.refresh(new_user)
