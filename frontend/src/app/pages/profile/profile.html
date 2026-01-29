@@ -1,0 +1,112 @@
+<!-- profile.component.html -->
+<div class="profile-container">
+  <div class="profile-header">
+    @if (user(); as currentUser) {
+      <div class="user-info">
+        <div class="avatar">
+          @if (isProfileOwner) {
+            <div class="avatar-container editable" (click)="handleUpdateProfilePicture()">
+              <img
+                [src]="getFullImageUrl(currentUser.profile_picture_url) || 'assets/default-avatar.png'"
+                alt="Profile picture"
+              />
+              <div class="edit-overlay">
+                @if (isUploading()) {
+                  <div class="spinner"></div>
+                } @else {
+                  <span class="edit-icon">✏️</span>
+                }
+              </div>
+            </div>
+          } @else {
+            <img
+              [src]="currentUser.profile_picture_url || 'assets/default-avatar.png'"
+              alt="Profile picture"
+            />
+          }
+        </div>
+        <div class="user-details">
+          <h1>{{ currentUser.username }}</h1>
+          <p class="member-since">Member since {{ currentUser.created_at | date: 'MMMM yyyy' }}</p>
+
+          @if (statusMessage()) {
+            <p
+              class="status-message"
+              [class.error]="statusType() === 'error'"
+              [class.success]="statusType() === 'success'"
+            >
+              {{ statusMessage() }}
+            </p>
+          }
+
+          @if (isProfileOwner && currentUser.profile_picture_url) {
+            <button class="delete-picture-btn" (click)="deleteProfilePicture()">
+              Delete Profile Picture
+            </button>
+          }
+        </div>
+      </div>
+    }
+    <div class="stats-grid">
+      <div class="stat-card">
+        <span class="stat-value">{{ totalClips() }}</span>
+        <span class="stat-label">Total Clips</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-value">{{ totalDuration() }}s</span>
+        <span class="stat-label">Watch Time</span>
+      </div>
+      <div class="stat-card">
+        @if (lastUpload()) {
+          <span class="stat-value">{{ lastUpload() | date: 'short' }}</span>
+        } @else {
+          <span class="stat-value">Never</span>
+        }
+        <span class="stat-label">Last Upload</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="clips-section">
+    <div class="section-header">
+      <h2>Clips</h2>
+      <div class="controls">
+        <select class="sort-dropdown" [(ngModel)]="sortOption" (change)="sortByValue()">
+          <option value="newest">Newest First</option>
+          <option value="oldest">Oldest First</option>
+          <option value="longest">Longest</option>
+          <option value="shortest">Shortest</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="clips-grid">
+      <!-- Placeholder clip cards -->
+      @for (clip of clips(); track clip.id) {
+        <div class="clip-card">
+          <div class="clip-thumbnail">
+            <app-video-player [clipId]="clip.id" [controls]="true" [autoplay]="false">
+            </app-video-player>
+            <div class="duration-badge">{{ clip.duration }}s</div>
+          </div>
+          <div class="clip-info">
+            <div class="clip-text">
+              <h3 (click)="navigateToClip(clip.id)">{{ clip.title }}</h3>
+              <p class="clip-meta">{{ clip.uploaded_at | date: 'short' }}</p>
+            </div>
+            @if (isProfileOwner) {
+              <button type="button" (click)="handleDelete(clip.id)" class="delete-clip-button">
+                🗑️
+              </button>
+            }
+          </div>
+        </div>
+      }
+      @if (clips().length === 0) {
+        <div class="empty-state">
+          <p>No clips uploaded yet</p>
+        </div>
+      }
+    </div>
+  </div>
+</div>

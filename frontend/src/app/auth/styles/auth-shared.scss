@@ -1,0 +1,349 @@
+// ============================================
+// Shared Auth Page Styles
+// ============================================
+
+.auth-container {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(
+    135deg,
+    var(--bg-gradient-start) 0%,
+    var(--bg-gradient-mid) 50%,
+    var(--bg-gradient-end) 100%
+  );
+  padding: 40px 20px;
+}
+
+.landing-header {
+  text-align: center;
+  margin-bottom: 40px;
+  color: var(--text-white);
+
+  .logo-placeholder {
+    width: 80px;
+    height: 80px;
+    margin: 0 auto 24px;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+
+    svg {
+      width: 48px;
+      height: 48px;
+      color: var(--text-white);
+    }
+  }
+
+  h1 {
+    font-size: 36px;
+    font-weight: 700;
+    margin: 0 0 12px;
+    color: var(--text-white);
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+  }
+
+  p {
+    font-size: 18px;
+    color: rgba(255, 255, 255, 0.9);
+    max-width: 500px;
+    margin: 0 auto;
+    line-height: 1.6;
+  }
+}
+
+.login-form {
+  width: 100%;
+  max-width: 440px;
+  background: var(--text-white);
+  border-radius: 20px;
+  padding: 48px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+
+  h2 {
+    color: var(--text-dark);
+    text-align: center;
+    margin: 0 0 8px;
+    font-size: 28px;
+    font-weight: 700;
+  }
+
+  .form-status {
+    text-align: center;
+    min-height: 24px;
+    font-size: 14px;
+    margin-bottom: 28px;
+    font-weight: 500;
+
+    &.error {
+      color: var(--error);
+    }
+
+    &.success {
+      color: var(--success);
+    }
+  }
+
+  .form-group {
+    margin-bottom: 24px;
+
+    label {
+      display: block;
+      margin-bottom: 8px;
+      color: var(--text-dark);
+      font-weight: 600;
+      font-size: 14px;
+      letter-spacing: 0.3px;
+    }
+
+    input {
+      width: 100%;
+      padding: 14px 16px;
+      border: 2px solid var(--input-border);
+      border-radius: 10px;
+      font-size: 15px;
+      transition: all 0.2s ease;
+      box-sizing: border-box;
+      background: var(--input-bg);
+
+      &:focus {
+        outline: none;
+        border-color: var(--color-primary);
+        background: var(--text-white);
+        box-shadow: 0 0 0 4px var(--input-focus-shadow);
+      }
+
+      &::placeholder {
+        color: var(--text-light-gray);
+      }
+    }
+  }
+
+  .form-actions {
+    margin-top: 32px;
+
+    button {
+      width: 100%;
+      padding: 16px;
+      background: linear-gradient(
+        135deg,
+        var(--color-primary-dark) 0%,
+        var(--color-primary) 100%
+      );
+      color: var(--text-white);
+      border: none;
+      border-radius: 10px;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      letter-spacing: 0.5px;
+
+      &:hover:not(:disabled) {
+        background: linear-gradient(
+          135deg,
+          var(--color-primary) 0%,
+          var(--color-primary-light) 100%
+        );
+        transform: translateY(-2px);
+        box-shadow: 0 12px 24px rgba(30, 58, 138, 0.4);
+      }
+
+      &:active:not(:disabled) {
+        transform: translateY(0);
+      }
+
+      &:disabled {
+        background: linear-gradient(
+          135deg,
+          var(--text-light-gray) 0%,
+          var(--text-gray) 100%
+        );
+        cursor: not-allowed;
+        transform: none;
+      }
+
+      .spinner {
+        width: 16px;
+        height: 16px;
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        border-top-color: var(--text-white);
+        border-radius: 50%;
+        animation: spin 0.6s linear infinite;
+      }
+    }
+  }
+
+  .form-footer {
+    margin-top: 24px;
+    text-align: center;
+
+    p {
+      color: var(--text-gray);
+      font-size: 14px;
+      margin: 0 0 16px 0;
+      min-height: 20px;
+
+      a {
+        color: var(--color-primary);
+        font-weight: 600;
+        text-decoration: none;
+        transition: color 0.2s;
+
+        &:hover {
+          color: var(--color-primary-dark);
+          text-decoration: underline;
+          cursor: pointer;
+        }
+      }
+    }
+
+    // Error and success text styles
+    .error-text {
+      color: var(--error);
+    }
+
+    .success-text {
+      color: var(--success);
+    }
+  }
+}
+
+// Go back button (used in recovery page)
+.go-back-container {
+  display: flex;
+  justify-content: center;
+  padding-top: 16px;
+  border-top: 1px solid var(--input-border);
+
+  .go-back-button {
+    background: transparent;
+    border: 2px solid var(--color-primary);
+    color: var(--color-primary);
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    &:hover {
+      background: var(--color-primary);
+      color: var(--text-white);
+      transform: translateX(-2px);
+    }
+
+    &:active {
+      transform: translateX(0);
+    }
+  }
+}
+
+// Recovery option buttons (specific to recovery page)
+.recovery-option-buttons {
+  display: flex;
+  gap: 16px;
+  margin-top: 24px;
+
+  button {
+    flex: 1;
+    padding: 16px 24px;
+    border: 2px solid var(--color-primary);
+    border-radius: 10px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    letter-spacing: 0.3px;
+
+    &.username-recovery-button {
+      background: var(--text-white);
+      color: var(--color-primary);
+
+      &:hover {
+        background: var(--color-primary);
+        color: var(--text-white);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(30, 58, 138, 0.3);
+      }
+
+      &:active {
+        transform: translateY(0);
+      }
+    }
+
+    &.password-recovery-button {
+      background: linear-gradient(
+        135deg,
+        var(--color-primary-dark) 0%,
+        var(--color-primary) 100%
+      );
+      color: var(--text-white);
+      border-color: var(--color-primary);
+
+      &:hover {
+        background: linear-gradient(
+          135deg,
+          var(--color-primary) 0%,
+          var(--color-primary-light) 100%
+        );
+        transform: translateY(-2px);
+        box-shadow: 0 12px 24px rgba(30, 58, 138, 0.4);
+      }
+
+      &:active {
+        transform: translateY(0);
+      }
+    }
+  }
+}
+
+// Validation error text
+.error-text {
+  display: block;
+  color: var(--error);
+  font-size: 13px;
+  margin-top: 4px;
+}
+
+// Animations
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+// Responsive
+@media (max-width: 600px) {
+  .login-form {
+    padding: 32px 24px;
+  }
+
+  .landing-header {
+    h1 {
+      font-size: 28px;
+    }
+
+    p {
+      font-size: 16px;
+    }
+  }
+
+  .recovery-option-buttons {
+    flex-direction: column;
+  }
+}

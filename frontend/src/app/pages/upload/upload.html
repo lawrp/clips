@@ -1,0 +1,145 @@
+<!-- upload.component.html -->
+<div class="upload-container">
+  <div class="upload-card">
+    <h1>Upload Your Clip{{ selectedFiles().length > 1 ? 's' : '' }}</h1>
+    <p class="subtitle">
+      {{ selectedFiles().length > 1 
+        ? 'Share multiple gaming moments at once' 
+        : 'Share your greatest gaming moments' }}
+    </p>
+
+    <form (ngSubmit)="onSubmit()" #uploadForm="ngForm">
+      <!-- File Upload - ADD DRAG-AND-DROP EVENTS HERE -->
+      <div class="form-group">
+        <label class="file-label">
+          <input 
+            type="file" 
+            accept="video/*"
+            multiple
+            (change)="onFileSelected($event)"
+            [disabled]="isUploading()"
+            hidden
+          />
+          <div 
+            class="file-upload-area" 
+            [class.has-file]="selectedFiles().length > 0"
+            [class.dragging]="isDragging()"
+            (dragover)="onDragOver($event)"
+            (dragleave)="onDragLeave($event)"
+            (drop)="onDrop($event)"
+          >
+            @if (selectedFiles().length === 0) {
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M7 18a4.6 4.4 0 0 1 0 -9a5 4.5 0 0 1 11 2h1a3.5 3.5 0 0 1 0 7h-1" />
+                <polyline points="9 15 12 12 15 15" />
+                <path d="M12 12v9" />
+              </svg>
+              <p class="upload-text">Click to select or drag & drop video files</p>
+              <p class="upload-hint">Select files or drop folders with MP4s, max 1GB each</p>
+            } @else {
+              <div class="files-list">
+                @for (file of selectedFiles(); track $index) {
+                  <div class="file-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+                    </svg>
+                    <span class="file-name">{{ file.name }}</span>
+                    @if (!isUploading()) {
+                      <button type="button" class="remove-btn" (click)="removeFile($index)">×</button>
+                    }
+                  </div>
+                }
+              </div>
+              @if (!isUploading()) {
+                <button type="button" class="change-files-btn" (click)="cancelUpload()">
+                  Change Files
+                </button>
+              }
+            }
+          </div>
+        </label>
+      </div>
+
+      <!-- Title & Description (only for single upload) -->
+      @if (isSingleUpload && selectedFiles().length > 0) {
+        <div class="form-group">
+          <label for="title">Title *</label>
+          <input
+            type="text"
+            id="title"
+            name="title"
+            [ngModel]="title()"
+            (ngModelChange)="title.set($event)"
+            required
+            maxlength="100"
+            placeholder="Epic headshot montage"
+            [disabled]="isUploading()"
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="description">Description</label>
+          <textarea
+            id="description"
+            name="description"
+            [ngModel]="description()"
+            (ngModelChange)="description.set($event)"
+            rows="4"
+            maxlength="500"
+            placeholder="Add some context about your clip..."
+            [disabled]="isUploading()"
+          ></textarea>
+        </div>
+      }
+
+      <!-- Multiple upload info -->
+      @if (!isSingleUpload && selectedFiles().length > 0) {
+        <div class="info-box">
+          <p>{{ selectedFiles().length }} files selected. Filenames will be used as titles.</p>
+        </div>
+      }
+
+      <!-- Progress Bar -->
+      @if (isUploading()) {
+        <div class="progress-section">
+          <app-loading-progress 
+            [progress]="uploadProgress()" 
+            color="primary"
+          ></app-loading-progress>
+          @if (!isSingleUpload) {
+            <p class="upload-status">
+              Uploading {{ currentFileIndex() + 1 }} of {{ selectedFiles().length }}
+            </p>
+          } @else {
+            <p class="upload-status">Uploading your clip...</p>
+          }
+        </div>
+      }
+
+      <!-- Submit Button -->
+      <div class="form-actions">
+        <button 
+          type="submit" 
+          class="submit-btn"
+          [disabled]="selectedFiles().length === 0 || (isSingleUpload && !title()) || isUploading()"
+        >
+          @if (isUploading()) {
+            Uploading...
+          } @else {
+            Upload {{ selectedFiles().length > 1 ? selectedFiles().length + ' Clips' : 'Clip' }}
+          }
+        </button>
+        
+        @if (!isUploading()) {
+          <button 
+            type="button" 
+            class="cancel-btn"
+            (click)="goToProfile()"
+          >
+            Cancel
+          </button>
+        }
+      </div>
+    </form>
+  </div>
+</div>

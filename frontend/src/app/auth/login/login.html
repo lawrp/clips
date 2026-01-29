@@ -1,0 +1,67 @@
+<div class="auth-container">
+  <div class="landing-header">
+    <div class="logo-placeholder">
+      <!-- You can add an actual logo/icon here later -->
+      <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </div>
+    <h1>Welcome to Clip Champ</h1>
+    <p>A hub for housing all of the greatest clips from you and your boys!</p>
+  </div>
+
+  <div class="login-form">
+    <form (ngSubmit)="onSubmit(loginForm)" #loginForm="ngForm">
+      <h2>Sign In</h2>
+      <p class="form-status" [class.error]="isError()" [class.success]="!isError()">
+        {{ loginStatus() }}
+      </p>
+      
+      <div class="form-group">
+        <label for="username">Username</label>
+        <input
+          type="text"
+          id="username"
+          name="username"
+          [(ngModel)]="username"
+          required
+          minlength="4"
+          maxlength="30"
+          placeholder="Enter your username"
+          #usernameInput="ngModel"
+        />
+      </div>
+      
+      <div class="form-group">
+        <label for="password">Password</label>
+        <input
+          type="password"
+          id="password"
+          name="password"
+          [(ngModel)]="password"
+          required
+          minlength="6"
+          maxlength="30"
+          placeholder="Enter your password"
+          #passwordInput="ngModel"
+        />
+      </div>
+      
+      <div class="form-actions">
+        <button type="submit" [disabled]="loginForm.invalid || isSubmitting()">
+          @if (isSubmitting()) { 
+            <span class="spinner"></span>
+            Logging in... 
+          } @else { 
+            Sign In 
+          }
+        </button>
+      </div>
+
+      <div class="form-footer">
+        <p>Don't have an account? <a routerLink="/register">Create one</a></p>
+        <p>Can't login? <a routerLink="/recover">Recover Account</a></p>
+      </div>
+    </form>
+  </div>
+</div>

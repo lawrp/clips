@@ -1,0 +1,8 @@
+@import '../login/login.scss';
+
+.error-text {
+  display: block;
+  color: var(--error);
+  font-size: 13px;
+  margin-top: 4px;
+}

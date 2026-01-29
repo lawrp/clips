@@ -1,0 +1,143 @@
+<!-- register.component.html -->
+<div class="auth-container">
+  <div class="landing-header">
+    <div class="logo-placeholder">
+      <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path
+          d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        />
+      </svg>
+    </div>
+    <h1>Join Clip Champ</h1>
+    <p>Create an account to start sharing your greatest gaming moments!</p>
+  </div>
+
+  <div class="login-form">
+    <form (ngSubmit)="onSubmit(registerForm)" #registerForm="ngForm">
+      <h2>Create Account</h2>
+      <p class="form-status" [class.error]="isError()" [class.success]="isSuccess()">
+        {{ registerStatus() }}
+      </p>
+
+      <div class="form-group">
+        <label for="username">Username</label>
+        <input
+          type="text"
+          id="username"
+          name="username"
+          [(ngModel)]="username"
+          required
+          minlength="4"
+          maxlength="30"
+          placeholder="Choose a username"
+          #usernameInput="ngModel"
+        />
+        @if (usernameInput.invalid && usernameInput.touched) {
+          <small class="error-text">Username must be 4-30 characters</small>
+        }
+      </div>
+
+      <div class="form-group">
+        <label for="email">Email</label>
+        <input
+          type="email"
+          id="email"
+          name="email"
+          [(ngModel)]="email"
+          required
+          minlength="4"
+          maxlength="30"
+          placeholder="Enter your email..."
+          #emailInput="ngModel"
+        />
+        @if (emailInput.invalid && emailInput.touched) {
+          @if (emailInput.errors?.['required']) {
+            <small class="error-text">Email is required</small>
+          }
+          @if (emailInput.errors?.['email']) {
+            <small class="error-text">Please enter a valid email address</small>
+          }
+        }
+      </div>
+
+      <div class="form-group">
+        <label for="confirmEmail">Confirm Email</label>
+        <input
+          type="email"
+          id="confirmEmail"
+          name="confirmEmail"
+          [(ngModel)]="confirmEmail"
+          required
+          minlength="4"
+          maxlength="30"
+          placeholder="Confirm Email"
+          #confirmEmailInput="ngModel"
+        />
+        @if (email !== confirmEmail && confirmEmailInput.touched) {
+          <small class="error-text">Emails must match</small>
+        }
+      </div>
+
+      <div class="form-group">
+        <label for="password">Password</label>
+        <input
+          type="password"
+          id="password"
+          name="password"
+          [(ngModel)]="password"
+          required
+          minlength="6"
+          maxlength="30"
+          placeholder="Create a password"
+          #passwordInput="ngModel"
+        />
+        @if (passwordInput.invalid && passwordInput.touched) {
+          <small class="error-text">Password must be at least 6 characters</small>
+        }
+      </div>
+
+      <div class="form-group">
+        <label for="confirmPassword">Confirm Password</label>
+        <input
+          type="password"
+          id="confirmPassword"
+          name="confirmPassword"
+          [(ngModel)]="confirmPassword"
+          required
+          placeholder="Re-enter your password"
+          #confirmPasswordInput="ngModel"
+        />
+        @if (password !== confirmPassword && confirmPasswordInput.touched) {
+          <small class="error-text">Passwords don't match</small>
+        }
+      </div>
+
+      <div class="form-actions">
+        <button
+          type="submit"
+          [disabled]="
+            registerForm.invalid ||
+            isSubmitting() ||
+            password !== confirmPassword ||
+            email != confirmEmail
+          "
+        >
+          @if (isSubmitting()) {
+            <span class="spinner"></span>
+            Creating account...
+          } @else {
+            Create Account
+          }
+        </button>
+      </div>
+
+      <div class="form-footer">
+        <p>Already have an account? <a routerLink="/login">Sign in</a></p>
+      </div>
+    </form>
+  </div>
+</div>
