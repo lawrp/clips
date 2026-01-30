@@ -3,11 +3,10 @@ import { Router, RouterLink } from '@angular/router';
 import { User } from '../../models/auth.model';
 import { AuthService } from '../../services/auth';
 import { Subscription } from 'rxjs';
-import { AsyncPipe } from '@angular/common';
 import { ProfilePicutre } from '../profile-picutre/profile-picutre';
 @Component({
   selector: 'app-header',
-  imports: [RouterLink, AsyncPipe, ProfilePicutre],
+  imports: [RouterLink, ProfilePicutre],
   templateUrl: './header.html',
   styleUrl: './header.scss',
 })

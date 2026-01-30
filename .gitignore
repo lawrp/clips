@@ -60,9 +60,6 @@ wheels/
 .coverage
 htmlcov/
 
-# ============================================
-# Angular / Frontend
-# ============================================
 # Dependencies
 frontend/node_modules/
 node_modules/
