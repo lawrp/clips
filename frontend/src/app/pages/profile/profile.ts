@@ -1,15 +1,14 @@
-import { Component, inject, Input, OnDestroy, OnInit, signal, ViewChild } from '@angular/core';
+import { Component, inject, OnDestroy, OnInit, signal } from '@angular/core';
 import { AuthService } from '../../services/auth';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { StatusType, User } from '../../models/auth.model';
-import { reduce, Subscription, switchMap, tap } from 'rxjs';
+import { Subscription, switchMap, tap } from 'rxjs';
 import { DatePipe } from '@angular/common';
 import { Clip } from '../../models/clip.model';
 import { ProfileService } from '../../services/profile';
 import { ClipService } from '../../services/clip-service';
 import { VideoPlayer } from '../../component/video-player/video-player';
 import { FormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
 import { SnackbarService } from '../../services/snackbar';
 import { environment } from '../../../environments/environment.development';
 
@@ -25,9 +24,10 @@ export class Profile implements OnInit, OnDestroy {
   profileService = inject(ProfileService);
   clipService = inject(ClipService);
   snackbarService = inject(SnackbarService);
+  route = inject(ActivatedRoute);
 
   user = signal<User | null>(null);
-  profileSubscription!: Subscription;
+  private profileSubscription?: Subscription;
 
   totalClips = signal<number>(0);
   totalDuration = signal<number>(0);
@@ -37,24 +37,30 @@ export class Profile implements OnInit, OnDestroy {
 
   sortOption: string = 'newest';
 
-  @Input() username: string = '';
-
   isUploading = signal<boolean>(false);
   uploadProgress = signal<number>(0);
   statusMessage = signal<string>('');
   statusType = signal<StatusType>('success');
 
+  isProfileOwner = signal<boolean>(false);
+
   ngOnInit() {
-    console.log('Username is: ', this.username);
-    this.profileSubscription = this.profileService
-      .getProfileData(this.username)
-      .pipe(
-        tap((user) => this.user.set(user)),
-        switchMap((user) => this.clipService.getClipsByUserId(user.id)),
-      )
-      .subscribe({
+    this.profileSubscription = this.route.paramMap.pipe(
+      tap(() => {
+        this.user.set(null);
+        this.clips.set([]);
+      }),
+      switchMap(params => {
+        const username = params.get('username')!;
+        return this.profileService.getProfileData(username);
+      }),
+      tap(user => {
+        this.user.set(user);
+        this.checkIfOwner(user);
+      }),
+      switchMap(user => this.clipService.getClipsByUserId(user.id))
+    ).subscribe({
         next: (clips) => {
-          console.table(clips);
           this.clips.set(clips);
           this.totalClips.set(this.getTotalClips(this.clips()));
           this.totalDuration.set(this.getWatchTime(this.clips()));
@@ -68,15 +74,6 @@ export class Profile implements OnInit, OnDestroy {
 
   getTotalClips(clips: Clip[]) {
     return clips.length;
-  }
-
-  get isProfileOwner() {
-    const current_user = this.authService.currentUser();
-    if (this.user() && current_user) {
-      return this.user()!.id == current_user!.id;
-    } else {
-      return false;
-    }
   }
 
   getWatchTime(clips: Clip[]) {
@@ -94,7 +91,7 @@ export class Profile implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
-    this.profileSubscription.unsubscribe();
+    this.profileSubscription?.unsubscribe();
   }
 
   navigateToClip(id: number) {
@@ -195,12 +192,12 @@ export class Profile implements OnInit, OnDestroy {
     this.statusMessage.set('');
 
     this.profileService.uploadProfilePicture(file).subscribe({
-      next: () => {
+      next: (user) => {
+        console.log('Entering next block in uploadProfilePicture')
         this.isUploading.set(false);
         this.statusMessage.set('Profile picture updated successfully!');
         this.statusType.set('success');
-
-        this.authService.fetchCurrentUser();
+        this.user.set(user);
 
         // Clear message after 3 seconds
         setTimeout(() => {
@@ -260,5 +257,10 @@ export class Profile implements OnInit, OnDestroy {
 
     // Otherwise, prepend the API URL
     return `${environment.apiUrl}${pictureUrl}`;
+  }
+
+  private checkIfOwner(user: User) {
+    const currentUser = this.authService.currentUser();
+    this.isProfileOwner.set(currentUser?.id === user.id)
   }
 }

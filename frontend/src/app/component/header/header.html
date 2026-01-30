@@ -12,31 +12,32 @@
     </div>
 
     @if (authService.currentUser$ | async; as user) {
+      <nav class="nav-links">
+        <a routerLink="/dashboard" routerLinkActive="active">Queue</a>
+        <a [routerLink]="['/profile', user.username]" routerLinkActive="active">Profile</a>
+        @if (user.role === UserRole.ADMIN) {
+          <a routerLink="/admin" routerLinkActive="active">Admin</a>
+        }
+      </nav>
 
-    <nav class="nav-links">
-      <a routerLink="/dashboard" routerLinkActive="active">Queue</a>
-      <a [routerLink]="['/profile', user.username]" routerLinkActive="active">Profile</a>
-    </nav>
+      <div class="upload-section">
+        <a routerLink="/upload" routerLinkActive="active">Upload</a>
+      </div>
 
-    <div class="upload-section">
-      <a routerLink="/upload" routerLinkActive="active">Upload</a>
-    </div>
-
-    <div class="user-menu">
-      <span class="profile-picture">
-        <app-profile-picutre 
-        [profilePictureUrl]="user.profile_picture_url"
-        [username]="user.username"
-        [userId]="user.id"
-        size="medium"
-        [showBorder]="false"
-        [clickable]="true"
-        />
-      </span>
-      <span class="username">{{ user.username }}</span>
-      <button (click)="logout()" class="logout-btn">Logout</button>
-    </div>
-
+      <div class="user-menu">
+        <span class="profile-picture">
+          <app-profile-picture
+            [profilePictureUrl]="user.profile_picture_url"
+            [username]="user.username"
+            [userId]="user.id"
+            size="medium"
+            [showBorder]="false"
+            [clickable]="true"
+          />
+        </span>
+        <span class="username">{{ user.username }}</span>
+        <button (click)="logout()" class="logout-btn">Logout</button>
+      </div>
     }
   </div>
 </header>

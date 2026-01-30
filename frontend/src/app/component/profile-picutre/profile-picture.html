@@ -2,11 +2,11 @@
 @if (clickable && userId) {
   <a [routerLink]="['/profile', username]" class="profile-picture-link">
     <div class="profile-picture" [class]="sizeClass" [class.bordered]="showBorder">
-      <img [src]="imageUrl()" [alt]="username + ' profile picture'" />
+      <img [src]="imageUrl" [alt]="username + ' profile picture'" />
     </div>
   </a>
 } @else {
   <div class="profile-picture" [class]="sizeClass" [class.bordered]="showBorder">
-    <img [src]="imageUrl()" [alt]="username + ' profile picture'" />
+    <img [src]="imageUrl" [alt]="username + ' profile picture'" />
   </div>
 }

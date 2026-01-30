@@ -4,7 +4,7 @@
     @if (user(); as currentUser) {
       <div class="user-info">
         <div class="avatar">
-          @if (isProfileOwner) {
+          @if (isProfileOwner()) {
             <div class="avatar-container editable" (click)="handleUpdateProfilePicture()">
               <img
                 [src]="getFullImageUrl(currentUser.profile_picture_url) || 'assets/default-avatar.png'"
@@ -39,7 +39,7 @@
             </p>
           }
 
-          @if (isProfileOwner && currentUser.profile_picture_url) {
+          @if (isProfileOwner() && currentUser.profile_picture_url) {
             <button class="delete-picture-btn" (click)="deleteProfilePicture()">
               Delete Profile Picture
             </button>
@@ -94,7 +94,7 @@
               <h3 (click)="navigateToClip(clip.id)">{{ clip.title }}</h3>
               <p class="clip-meta">{{ clip.uploaded_at | date: 'short' }}</p>
             </div>
-            @if (isProfileOwner) {
+            @if (isProfileOwner()) {
               <button type="button" (click)="handleDelete(clip.id)" class="delete-clip-button">
                 🗑️
               </button>

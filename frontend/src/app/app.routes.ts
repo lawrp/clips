@@ -19,7 +19,7 @@ export const routes: Routes = [
     { path: 'reset-password', component: ResetPassword, title: 'Reset Password', canActivate: [guestGuard] },
 
     { path: 'dashboard', component: Home, title: 'Dashboard', canActivate: [authGuard] },
-    { path: 'profile/:username', component: Profile, title: 'My Profile', canActivate: [authGuard] },
+    { path: 'profile/:username', component: Profile, title: 'My Profile', canActivate: [authGuard]},
     { path: 'clip/:id', component: ClipPage, title: 'Clip'},
     { path: 'upload', component: Upload, title: 'Upload Your Clip', canActivate: [authGuard] },
     { path: 'admin', component: AdminPanel, title: 'Admin Panel', canActivate: [adminGuard] },

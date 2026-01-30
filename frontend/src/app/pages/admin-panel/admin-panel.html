@@ -1,1 +1,190 @@
-<p>admin-panel works!</p>
+<!-- admin-panel.component.html -->
+<div class="admin-container">
+  <div class="admin-header">
+    <h1>Admin Panel</h1>
+    <p class="subtitle">Manage users and platform settings</p>
+  </div>
+
+  <!-- Stats Cards -->
+  @if (stats(); as statistics) {
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-icon">👥</div>
+        <div class="stat-content">
+          <span class="stat-value">{{ statistics.total_users }}</span>
+          <span class="stat-label">Total Users</span>
+        </div>
+      </div>
+
+      <div class="stat-card pending">
+        <div class="stat-icon">⏳</div>
+        <div class="stat-content">
+          <span class="stat-value">{{ statistics.pending_approvals }}</span>
+          <span class="stat-label">Pending Approvals</span>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon">🎥</div>
+        <div class="stat-content">
+          <span class="stat-value">{{ statistics.total_videos }}</span>
+          <span class="stat-label">Total Videos</span>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon">💬</div>
+        <div class="stat-content">
+          <span class="stat-value">{{ statistics.total_comments }}</span>
+          <span class="stat-label">Total Comments</span>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- Filters and Search -->
+  <div class="controls-section">
+    <div class="search-box">
+      <svg class="search-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+      </svg>
+      <input
+        type="text"
+        placeholder="Search by username or email..."
+        [(ngModel)]="searchTerm"
+        (input)="applyFilters()"
+      />
+    </div>
+
+    <div class="filters">
+      <select [(ngModel)]="roleFilter" (change)="applyFilters()">
+        <option value="">All Roles</option>
+        <option [value]="UserRole.ADMIN">Admin</option>
+        <option [value]="UserRole.MODERATOR">Moderator</option>
+        <option [value]="UserRole.USER">User</option>
+      </select>
+
+      <select [(ngModel)]="approvalFilter" (change)="applyFilters()">
+        <option [value]="null">All Status</option>
+        <option [value]="true">Approved</option>
+        <option [value]="false">Pending</option>
+      </select>
+
+      <button class="btn-secondary" (click)="clearFilters()">
+        Clear Filters
+      </button>
+    </div>
+  </div>
+
+  <!-- Status Message -->
+  @if (statusMessage()) {
+    <div class="status-message" [class.error]="statusType() === 'error'" [class.success]="statusType() === 'success'">
+      {{ statusMessage() }}
+    </div>
+  }
+
+  <!-- Users Table -->
+  <div class="table-container">
+    @if (isLoading()) {
+      <div class="loading-state">
+        <div class="spinner"></div>
+        <p>Loading users...</p>
+      </div>
+    } @else if (users().length === 0) {
+      <div class="empty-state">
+        <p>No users found</p>
+      </div>
+    } @else {
+      <table class="users-table">
+        <thead>
+          <tr>
+            <th>User</th>
+            <th>Email</th>
+            <th>Joined</th>
+            <th>Role</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (user of users(); track user.id) {
+            <tr>
+              <!-- User Info -->
+              <td class="user-cell">
+                <div class="user-info">
+                  <app-profile-picture
+                    [profilePictureUrl]="user.profile_picture_url"
+                    [username]="user.username"
+                    [userId]="user.id"
+                    size="small"
+                    [showBorder]="false"
+                    [clickable]="false"
+                    />
+                  <div class="user-details">
+                    <span class="username">{{ user.username }}</span>
+                    <span class="user-id">ID: {{ user.id }}</span>
+                  </div>
+                </div>
+              </td>
+
+              <!-- Email -->
+              <td class="email-cell">{{ user.email }}</td>
+
+              <!-- Date Joined -->
+              <td class="date-cell">{{ user.created_at | date: 'MMM d, y' }}</td>
+
+              <!-- Role -->
+              <td class="role-cell">
+                <select
+                  class="role-select"
+                  [value]="user.role"
+                  (change)="updateRole(user.id, $event)"
+                  [disabled]="user.id === authService.currentUser()?.id">
+                  <option [value]="UserRole.USER">User</option>
+                  <option [value]="UserRole.MODERATOR">Moderator</option>
+                  <option [value]="UserRole.ADMIN">Admin</option>
+                </select>
+              </td>
+
+              <!-- Approval Status -->
+              <td class="status-cell">
+                <span class="status-badge" [class.approved]="user.approved" [class.pending]="!user.approved">
+                  {{ user.approved ? 'Approved' : 'Pending' }}
+                </span>
+              </td>
+
+              <!-- Actions -->
+              <td class="actions-cell">
+                <div class="action-buttons">
+                  @if (!user.approved) {
+                    <button
+                      class="btn-approve"
+                      (click)="toggleApproval(user.id, user.approved)"
+                      title="Approve user">
+                      ✓ Approve
+                    </button>
+                  } @else {
+                    <button
+                      class="btn-unapprove"
+                      (click)="toggleApproval(user.id, user.approved)"
+                      title="Revoke approval">
+                      ✗ Revoke
+                    </button>
+                  }
+
+                  <button
+                    class="btn-danger"
+                    (click)="deleteUser(user.id, user.username)"
+                    [disabled]="user.id === authService.currentUser()?.id"
+                    title="Delete user">
+                    🗑️
+                  </button>
+                </div>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    }
+  </div>
+</div>

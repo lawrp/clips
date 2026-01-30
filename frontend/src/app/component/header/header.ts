@@ -3,17 +3,20 @@ import { Router, RouterLink } from '@angular/router';
 import { User } from '../../models/auth.model';
 import { AuthService } from '../../services/auth';
 import { Subscription } from 'rxjs';
-import { ProfilePicutre } from '../profile-picutre/profile-picutre';
+import { ProfilePicture } from '../profile-picutre/profile-picture';
 import { AsyncPipe } from '@angular/common';
+import { UserRole } from '../../models/roles.model';
 @Component({
   selector: 'app-header',
-  imports: [RouterLink, ProfilePicutre, AsyncPipe],
+  imports: [RouterLink, ProfilePicture, AsyncPipe],
   templateUrl: './header.html',
   styleUrl: './header.scss',
 })
 export class Header {
   authService = inject(AuthService);
   router = inject(Router);
+
+  UserRole = UserRole
 
   logout() {
     this.authService.logout();
