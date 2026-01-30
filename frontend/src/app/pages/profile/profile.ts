@@ -195,19 +195,12 @@ export class Profile implements OnInit, OnDestroy {
     this.statusMessage.set('');
 
     this.profileService.uploadProfilePicture(file).subscribe({
-      next: (res) => {
+      next: () => {
         this.isUploading.set(false);
         this.statusMessage.set('Profile picture updated successfully!');
         this.statusType.set('success');
 
-        // Update the user signal with new profile picture URL
-        const currentUser = this.user();
-        if (currentUser) {
-          this.user.set({
-            ...currentUser,
-            profile_picture_url: res.profile_picture_url,
-          });
-        }
+        this.authService.fetchCurrentUser();
 
         // Clear message after 3 seconds
         setTimeout(() => {

@@ -10,13 +10,21 @@ import {
   switchMap,
   tap,
 } from 'rxjs';
-import { LoginRequest, PasswordRequest, PasswordResetRequest, RegisterRequest, TokenResponse, User } from '../models/auth.model';
+import {
+  LoginRequest,
+  PasswordRequest,
+  PasswordResetRequest,
+  RegisterRequest,
+  TokenResponse,
+  User,
+} from '../models/auth.model';
 import { environment } from '../../environments/environment.development';
 
 @Injectable({
   providedIn: 'root',
 })
-export class AuthService { // Renamed from Auth
+export class AuthService {
+  // Renamed from Auth
   private httpClient = inject(HttpClient);
   private apiUrl = environment.apiUrl;
 
@@ -34,7 +42,7 @@ export class AuthService { // Renamed from Auth
   readonly isAuthenticated$ = combineLatest([this.authInitialized$, this.currentUser$]).pipe(
     filter(([initialized]) => initialized),
     map(([_, user]) => !!user),
-    distinctUntilChanged()
+    distinctUntilChanged(),
   );
 
   initializeAuth(): void {
@@ -77,7 +85,7 @@ export class AuthService { // Renamed from Auth
         tap((user) => {
           this.setUser(user);
           this.authInitializedSubject.next(true);
-        })
+        }),
       );
   }
 
@@ -101,14 +109,29 @@ export class AuthService { // Renamed from Auth
   }
 
   recoverUsername(email: string) {
-    return this.httpClient.post(`${this.apiUrl}/api/recover-username`, { email: email})
+    return this.httpClient.post(`${this.apiUrl}/api/recover-username`, { email: email });
   }
-  
+
   recoverPassword(details: PasswordRequest) {
-    return this.httpClient.post(`${this.apiUrl}/api/request-password-reset`, { username: details.username, email: details.email});
+    return this.httpClient.post(`${this.apiUrl}/api/request-password-reset`, {
+      username: details.username,
+      email: details.email,
+    });
   }
 
   resetPassword(details: PasswordResetRequest) {
     return this.httpClient.post(`${this.apiUrl}/api/reset-password`, details);
+  }
+
+  refreshUser(): Observable<User> {
+    return this.fetchCurrentUser();
+  }
+
+  fetchCurrentUser(): Observable<User> {
+    return this.httpClient.get<User>(`${this.apiUrl}/api/users/me`).pipe(
+      tap((user) => {
+        this.currentUserSubject.next(user);
+      }),
+    );
   }
 }

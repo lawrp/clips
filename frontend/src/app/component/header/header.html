@@ -11,7 +11,7 @@
       <span>Clip Champ</span>
     </div>
 
-    @if (currentUser(); as user) {
+    @if (authService.currentUser$ | async; as user) {
 
     <nav class="nav-links">
       <a routerLink="/dashboard" routerLinkActive="active">Queue</a>
