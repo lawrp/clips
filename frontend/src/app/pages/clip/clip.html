@@ -1,91 +1,147 @@
-<div class="clip-page-container">
-  <div class="clip-page-header">
-    <div class="clip-page-title-container">
-      @if (clip()) { @if (isClipOwner) { @if (editTitle()) {
-      <div class="clip-title-edit">
-        <textarea
-          [(ngModel)]="clipTitle"
-          class="clip-title-edit-body"
-          [disabled]="isSubmitting()"
-          placeholder="Enter clip title..."
-        ></textarea>
-        <div class="edit-title-form-controls">
-          <button class="confirm-edit-title" (click)="postEditTitle()" [disabled]="isSubmitting()">
-            <span class="confirm-edit-title-text">✓</span>
-          </button>
-          <button class="cancel-edit-title" (click)="cancelEditTitle()" [disabled]="isSubmitting()">
-            <span class="cancel-edit-title-text">✕</span>
+@if (isLoading()) {
+  <div class="clip-loading">
+    <p>Loading Clip...</p>
+  </div>
+} @else if (notFound()) {
+  <div class="clip-not-found">
+    <h1>Clip not found</h1>
+    <p>This clip may have been deleted or never existed.</p>
+
+    <a routerLink="/" class="back-home"> Go back home </a>
+  </div>
+} @else {
+  <div class="clip-page-container">
+    <div class="clip-page-header">
+      <div class="clip-page-title-container">
+        @if (clip()) {
+          @if (isClipOwner) {
+            @if (editTitle()) {
+              <div class="clip-title-edit">
+                <textarea
+                  [(ngModel)]="clipTitle"
+                  class="clip-title-edit-body"
+                  [disabled]="isSubmitting()"
+                  placeholder="Enter clip title..."
+                ></textarea>
+                <div class="edit-title-form-controls">
+                  <button
+                    class="confirm-edit-title"
+                    (click)="postEditTitle()"
+                    [disabled]="isSubmitting()"
+                  >
+                    <span class="confirm-edit-title-text">✓</span>
+                  </button>
+                  <button
+                    class="cancel-edit-title"
+                    (click)="cancelEditTitle()"
+                    [disabled]="isSubmitting()"
+                  >
+                    <span class="cancel-edit-title-text">✕</span>
+                  </button>
+                </div>
+              </div>
+            } @else {
+              <h1 class="clip-title">{{ clipTitle() }}</h1>
+              <button class="title-edit-button" (click)="onEditTitle()" title="Edit title">
+                <span class="edit-icon">✏️</span>
+              </button>
+            }
+          } @else {
+            <h1 class="clip-title">{{ clipTitle() }}</h1>
+          }
+        } @else {
+          <div class="clip-title-skeleton"></div>
+        }
+      </div>
+    </div>
+
+    <!-- Video Section -->
+    <div class="video-section">
+      <div class="video-wrapper">
+        <app-video-player [clipId]="clipId"></app-video-player>
+      </div>
+      <div class="video-footer">
+        <div class="video-info">
+          <div class="video-info-row">
+            <div class="owner-info">
+              <app-profile-picture
+                [profilePictureUrl]="uploaderProfilePic()"
+                [username]="clip()?.username ?? ''"
+                [userId]="clip()?.user_id"
+                [size]="'medium'"
+                [clickable]="true"
+                [showBorder]="true"
+              >
+              </app-profile-picture>
+              <div class="owner-details">
+                <span class="owner-username">{{ clip()?.username }}</span>
+                <span class="owner-meta">{{ clip()?.uploaded_at | date: 'MMM d, yyyy' }}</span>
+              </div>
+            </div>
+
+            <div class="description-block">
+              @if (isClipOwner && editDescription()) {
+                <div class="clip-description-edit">
+                  <textarea
+                    [(ngModel)]="clipDescription"
+                    class="clip-description-edit-body"
+                    [disabled]="isSubmitting()"
+                    placeholder="Enter clip description..."
+                  ></textarea>
+                  <div class="edit-description-form-controls">
+                    <button
+                      class="confirm-edit-description"
+                      (click)="postEditDescription()"
+                      [disabled]="isSubmitting()"
+                    >
+                      <span class="confirm-edit-description-text">✓</span>
+                    </button>
+                    <button
+                      class="cancel-edit-description"
+                      (click)="cancelEditDescription()"
+                      [disabled]="isSubmitting()"
+                    >
+                      <span class="cancel-edit-description-text">✕</span>
+                    </button>
+                  </div>
+                </div>
+              } @else {
+                @if (clip()?.description) {
+                  <p class="video-description">{{ clipDescription() }}</p>
+                } @else {
+                  <p class="video-description no-description">No description provided</p>
+                }
+                @if (isClipOwner) {
+                  <button
+                    class="description-edit-button"
+                    (click)="onEditDescription()"
+                    title="Edit description"
+                  >
+                    <span class="edit-icon">✏️</span>
+                  </button>
+                }
+              }
+            </div>
+          </div>
+        </div>
+
+        <div class="video-actions">
+          <button
+            class="video-like-btn"
+            (click)="onLikeClip()"
+            [class.active]="user_has_liked()"
+            [disabled]="!authService.isAuthenticated()"
+          >
+            <span class="icon">👍</span>
+            <span class="count">{{ clipLikes() }}</span>
           </button>
         </div>
       </div>
-      } @else {
-      <h1 class="clip-title">{{ clipTitle() }}</h1>
-      <button class="title-edit-button" (click)="onEditTitle()" title="Edit title">
-        <span class="edit-icon">✏️</span>
-      </button>
-      } } @else {
-      <h1 class="clip-title">{{ clipTitle() }}</h1>
-      } } @else {
-      <div class="clip-title-skeleton"></div>
-      }
     </div>
-  </div>
 
-  <!-- Video Section -->
-  <div class="video-section">
-    <div class="video-wrapper">
-      <app-video-player [clipId]="clipId"></app-video-player>
-    </div>
-    <div class="video-footer">
-      <div class="video-info">
-        @if (isClipOwner && editDescription()) {
-          <!-- Edit mode for description -->
-          <div class="clip-description-edit">
-            <textarea
-              [(ngModel)]="clipDescription"
-              class="clip-description-edit-body"
-              [disabled]="isSubmitting()"
-              placeholder="Enter clip description..."
-            ></textarea>
-            <div class="edit-description-form-controls">
-              <button class="confirm-edit-description" (click)="postEditDescription()" [disabled]="isSubmitting()">
-                <span class="confirm-edit-description-text">✓</span>
-              </button>
-              <button class="cancel-edit-description" (click)="cancelEditDescription()" [disabled]="isSubmitting()">
-                <span class="cancel-edit-description-text">✕</span>
-              </button>
-            </div>
-          </div>
-        } @else {
-          <!-- Display mode for description -->
-          @if (clip()?.description) {
-            <p class="video-description">{{ clipDescription() }}</p>
-          } @else {
-            <p class="video-description no-description">No description provided</p>
-          }
-          @if (isClipOwner) {
-            <button class="description-edit-button" (click)="onEditDescription()" title="Edit description">
-              <span class="edit-icon">✏️</span>
-            </button>
-          }
-        }
-      </div>
-      <div class="video-actions">
-        <button
-          class="video-like-btn"
-          (click)="onLikeClip()"
-          [class.active]="user_has_liked()"
-          [disabled]="!authService.isAuthenticated()"
-        >
-          <span class="icon">👍</span>
-          <span class="count">{{ clipLikes() }}</span>
-        </button>
-      </div>
+    <!-- Comments section -->
+    <div class="comments-wrapper">
+      <app-comments-section [clipId]="clipId"></app-comments-section>
     </div>
   </div>
-
-  <!-- Comments section -->
-  <div class="comments-wrapper">
-    <app-comments-section [clipId]="clipId"></app-comments-section>
-  </div>
-</div>
+}

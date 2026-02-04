@@ -1,106 +1,121 @@
 <div class="comment-container" [class.deleted]="comment.is_deleted">
   <div class="comment-header">
-    <img
-      class="user-avatar"
-      src="assets/default-avatar.png"
-      alt="{{ comment.commenter_username }}'s avatar"
-    />
+    <app-profile-picture
+      [profilePictureUrl]="profilePicUrl()"
+      [size]="'medium'"
+      [userId]="comment.commenter_id"
+      [username]="comment.commenter_username"
+      [clickable]="true"
+    >
+    </app-profile-picture>
     <div class="comment-info">
       <div class="user-details">
         <span class="username">{{ comment.commenter_username }}</span>
         <span class="timestamp">{{ timeAgo }}</span>
         @if (comment.edited_at) {
-        <span class="edited-badge">(edited)</span>
+          <span class="edited-badge">(edited)</span>
         }
       </div>
     </div>
     @if (isOwnComment && !comment.is_deleted) {
-    <div class="comment-actions">
-      <button class="action-btn" (click)="onEdit()" title="Edit">
-        <span class="icon">✏️</span>
-      </button>
-      <button class="action-btn delete" (click)="onDelete()" title="Delete">
-        <span class="icon">🗑️</span>
-      </button>
-    </div>
+      <div class="comment-actions">
+        <button class="action-btn" (click)="onEdit()" title="Edit">
+          <span class="icon">✏️</span>
+        </button>
+        <button class="action-btn delete" (click)="onDelete()" title="Delete">
+          <span class="icon">🗑️</span>
+        </button>
+      </div>
     }
   </div>
   @if (!isEditing()) {
-  <div class="comment-body">
-    <p class="message" [class.deleted-message]="comment.is_deleted">
-      {{ comment.message }}
-    </p>
-  </div>
-  } @else {
-  <div class="comment-input-wrapper">
-    <textarea
-      [(ngModel)]="commentMessage"
-      placeholder="Add a comment..."
-      class="comment-message-body"
-      [disabled]="isSubmitting()"
-    ></textarea>
-
-    @if (commentMessage().trim().length > 0) {
-    <div class="comment-actions">
-      <button class="cancel-btn" (click)="onCancelEdit()" [disabled]="isSubmitting()">
-        Cancel
-      </button>
-      <button
-        class="post-comment-btn"
-        (click)="onPostEdit()"
-        [disabled]="!commentMessage().trim() || isSubmitting()"
-      >
-        {{ isSubmitting() ? 'Posting...' : 'Comment' }}
-      </button>
+    <div class="comment-body">
+      <p class="message" [class.deleted-message]="comment.is_deleted">
+        {{ comment.message }}
+      </p>
     </div>
-    }
-  </div>
+  } @else {
+    <div class="comment-input-wrapper">
+      <textarea
+        [(ngModel)]="commentMessage"
+        placeholder="Add a comment..."
+        class="comment-message-body"
+        [disabled]="isSubmitting()"
+      ></textarea>
+
+      @if (commentMessage().trim().length > 0) {
+        <div class="comment-actions">
+          <button class="cancel-btn" (click)="onCancelEdit()" [disabled]="isSubmitting()">
+            Cancel
+          </button>
+          <button
+            class="post-comment-btn"
+            (click)="onPostEdit()"
+            [disabled]="!commentMessage().trim() || isSubmitting()"
+          >
+            {{ isSubmitting() ? 'Posting...' : 'Comment' }}
+          </button>
+        </div>
+      }
+    </div>
   }
 
   <div class="comment-footer">
-    <button class="footer-btn" (click)="onReply()"><span class="icon">💬</span> Reply</button>
-
+    @if (authService.isAuthenticated()) {
+      <button class="footer-btn" (click)="onReply()"><span class="icon">💬</span> Reply</button>
+    }
     @if (comment.reply_count > 0) {
-    <span class="reply-count" (click)="toggleReplies()"
-      >{{ comment.reply_count }} {{ comment.reply_count === 1 ? 'reply' : 'replies' }}
-    </span>
+      <span class="reply-count" (click)="toggleReplies()"
+        >{{ comment.reply_count }} {{ comment.reply_count === 1 ? 'reply' : 'replies' }}
+      </span>
     }
 
     <div class="like-dislike">
-      <button class="footer-btn" (click)="onLike()" [class.active]="comment.user_has_liked">
+      <button
+        class="footer-btn"
+        [disabled]="!authService.isAuthenticated()"
+        (click)="onLike()"
+        [class.active]="comment.user_has_liked"
+      >
         <span class="icon">👍</span> {{ comment.likes }}
       </button>
-      <button class="footer-btn" (click)="onDislike()" [class.active]="comment.user_has_disliked">
+      <button
+        class="footer-btn"
+        [disabled]="!authService.isAuthenticated()"
+        (click)="onDislike()"
+        [class.active]="comment.user_has_disliked"
+      >
         <span class="icon">👎</span> {{ comment.dislikes }}
       </button>
     </div>
   </div>
 
   @if (showReplies()) {
-  <div class="replies-container">
-    @for (replyComment of replies(); track replyComment.id) {
-    <app-comment
-      [comment]="replyComment"
-      (delete)="handleReplyDelete($event)"
-      (edit)="handleReplyEdit($event)"
-      (reply)="handleReplyCreate($event)"
-      (like)="handleReplyLike($event)"
-      (dislike)="handleReplyDislike($event)"
-    />
-    }
-  </div>
-  } @if (showReplyForm()) {
-  <div class="reply-form">
-    <textarea
-      class="reply-input"
-      [(ngModel)]="replyMessage"
-      placeholder="Add a reply..."
-      [disabled]="isSubmitting()"
-    ></textarea>
-    <div class="reply-actions">
-      <button class="btn-cancel" (click)="showReplyForm.set(false)">Cancel</button>
-      <button class="btn-submit" (click)="onPostReply()">Reply</button>
+    <div class="replies-container">
+      @for (replyComment of replies(); track replyComment.id) {
+        <app-comment
+          [comment]="replyComment"
+          (delete)="handleReplyDelete($event)"
+          (edit)="handleReplyEdit($event)"
+          (reply)="handleReplyCreate($event)"
+          (like)="handleReplyLike($event)"
+          (dislike)="handleReplyDislike($event)"
+        />
+      }
     </div>
-  </div>
+  }
+  @if (showReplyForm()) {
+    <div class="reply-form">
+      <textarea
+        class="reply-input"
+        [(ngModel)]="replyMessage"
+        placeholder="Add a reply..."
+        [disabled]="isSubmitting() || !authService.isAuthenticated()"
+      ></textarea>
+      <div class="reply-actions">
+        <button class="btn-cancel" (click)="showReplyForm.set(false)">Cancel</button>
+        <button class="btn-submit" (click)="onPostReply()">Reply</button>
+      </div>
+    </div>
   }
 </div>

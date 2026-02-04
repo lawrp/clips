@@ -1,0 +1,17 @@
+<div class="thumbnail-wrapper" (click)="onPlay($event)">
+    @if (thumbnailUrl) {
+        <img [src]="thumbnailUrl" alt="{{ clip.title }}" class="thumbnail-img" />
+    } @else {
+        <div class="thumbnail-placeholder">
+            <span class="placeholder-icon">🎬</span>
+        </div>
+    }
+
+    <div class="play-overlay">
+        <div class="play-button">
+            <svg viewBox="0 0 24 24" fill="currentColor" class="play-icon">
+        <polygon points="5,3 19,12 5,21" />
+            </svg>
+        </div>
+    </div>
+</div>

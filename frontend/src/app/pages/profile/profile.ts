@@ -11,10 +11,12 @@ import { VideoPlayer } from '../../component/video-player/video-player';
 import { FormsModule } from '@angular/forms';
 import { SnackbarService } from '../../services/snackbar';
 import { environment } from '../../../environments/environment.development';
-
+import { ClipThumbnail } from '../../component/clip-thumbnail/clip-thumbnail';
+import { RouterLink } from '@angular/router';
+import { UserRole } from '../../models/roles.model';
 @Component({
   selector: 'app-profile',
-  imports: [DatePipe, VideoPlayer, FormsModule],
+  imports: [DatePipe, VideoPlayer, FormsModule, ClipThumbnail, RouterLink],
   templateUrl: './profile.html',
   styleUrl: './profile.scss',
 })
@@ -44,30 +46,52 @@ export class Profile implements OnInit, OnDestroy {
 
   isProfileOwner = signal<boolean>(false);
 
+  activeClips = signal<Set<number>>(new Set());
+
+  isLoading = signal<boolean>(true);
+  notFound = signal<boolean>(false);
+
+  UserRole = UserRole
+
   ngOnInit() {
-    this.profileSubscription = this.route.paramMap.pipe(
-      tap(() => {
-        this.user.set(null);
-        this.clips.set([]);
-      }),
-      switchMap(params => {
-        const username = params.get('username')!;
-        return this.profileService.getProfileData(username);
-      }),
-      tap(user => {
-        this.user.set(user);
-        this.checkIfOwner(user);
-      }),
-      switchMap(user => this.clipService.getClipsByUserId(user.id))
-    ).subscribe({
+    this.profileSubscription = this.route.paramMap
+      .pipe(
+        tap(() => {
+          this.user.set(null);
+          this.clips.set([]);
+          this.notFound.set(false);
+          this.isLoading.set(true);
+        }),
+        switchMap((params) => {
+          const username = params.get('username')!;
+          return this.profileService.getProfileData(username);
+        }),
+        tap((user) => {
+          this.user.set(user);
+          this.checkIfOwner(user);
+        }),
+        switchMap((user) => this.clipService.getClipsByUserId(user.id)),
+      )
+      .subscribe({
         next: (clips) => {
           this.clips.set(clips);
           this.totalClips.set(this.getTotalClips(this.clips()));
           this.totalDuration.set(this.getWatchTime(this.clips()));
           const recentClip = this.getRecentDate(this.clips());
           this.lastUpload.set(recentClip ? new Date(recentClip.uploaded_at) : null);
+
+          this.isLoading.set(false);
         },
-        error: (e) => console.error(`Error fetching clips... ${e}`),
+        error: (e) => {
+          this.isLoading.set(false);
+
+          if (e.status === 404) {
+            this.notFound.set(true);
+            return;
+          }
+
+          this.snackbarService.show('There was an error loading this profile.', 'error', 3000);
+        },
       });
     this.sortByNewest();
   }
@@ -193,7 +217,7 @@ export class Profile implements OnInit, OnDestroy {
 
     this.profileService.uploadProfilePicture(file).subscribe({
       next: (user) => {
-        console.log('Entering next block in uploadProfilePicture')
+        console.log('Entering next block in uploadProfilePicture');
         this.isUploading.set(false);
         this.statusMessage.set('Profile picture updated successfully!');
         this.statusType.set('success');
@@ -261,6 +285,29 @@ export class Profile implements OnInit, OnDestroy {
 
   private checkIfOwner(user: User) {
     const currentUser = this.authService.currentUser();
-    this.isProfileOwner.set(currentUser?.id === user.id)
+    this.isProfileOwner.set(currentUser?.id === user.id);
+  }
+
+  activateClip(clipId: number) {
+    this.activeClips.update((current) => new Set(current).add(clipId));
+  }
+
+  togglePrivacy(clipId: number) {
+    const clip = this.clips().find(c => c.id === clipId);
+    if (!clip) return;
+    
+    const newPrivateState = !clip.private;
+
+    this.clipService.updateClipById({ private: newPrivateState }, clipId).subscribe({
+      next: (updatedClip) => {
+        this.clips.update(current =>
+          current.map(c => c.id === clipId ? updatedClip : c)
+        );
+        this.snackbarService.show(`Clip is now ${newPrivateState ? 'private': 'public'}`, 'success', 3000);
+      },
+      error: (e) => {
+        this.snackbarService.show('Failed to update privacy', 'error', 3000);
+      }
+    })
   }
 }

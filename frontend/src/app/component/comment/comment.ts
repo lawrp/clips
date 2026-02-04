@@ -3,10 +3,12 @@ import { CommentResponse, CommentCreate } from '../../models/comment.model';
 import { AuthService } from '../../services/auth';
 import { FormsModule } from '@angular/forms';
 import { CommentService } from '../../services/comment';
+import { ProfileService } from '../../services/profile';
+import { ProfilePicture } from '../profile-picutre/profile-picture';
 
 @Component({
   selector: 'app-comment',
-  imports: [FormsModule],
+  imports: [FormsModule, ProfilePicture],
   templateUrl: './comment.html',
   styleUrl: './comment.scss',
 })
@@ -21,6 +23,7 @@ export class Comment implements OnInit {
 
   authService: AuthService = inject(AuthService);
   commentsService: CommentService = inject(CommentService);
+  profileService: ProfileService = inject(ProfileService);
 
   isEditing = signal<boolean>(false);
   isSubmitting = signal<boolean>(false);
@@ -33,10 +36,17 @@ export class Comment implements OnInit {
   showReplies = signal<boolean>(false);
   replies = signal<CommentResponse[]>([]);
 
+  profilePicUrl = signal<string | null>(null);
+
   ngOnInit() {
     this.userHasLiked.set(this.comment.user_has_liked);
     this.userHasDisliked.set(this.comment.user_has_disliked);
     this.commentMessage.set(this.comment.message);
+
+    this.profileService.getUserProfilePicture(this.comment.commenter_id).subscribe({
+      next: (res) => this.profilePicUrl.set(res.profile_picture_url),
+      error: (err) => console.error(err)
+    });
   }
 
   get isOwnComment(): boolean {

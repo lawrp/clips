@@ -61,6 +61,12 @@
     justify-content: center;
     background: var(--input-bg);
     border-radius: 12px;
+
+    .stat-icon-img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
   }
 
   .stat-content {

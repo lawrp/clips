@@ -13,17 +13,17 @@
 
     @if (authService.currentUser$ | async; as user) {
       <nav class="nav-links">
-        <a routerLink="/dashboard" routerLinkActive="active">Queue</a>
+        <a routerLink="/dashboard" routerLinkActive="active">Feed</a>
         <a [routerLink]="['/profile', user.username]" routerLinkActive="active">Profile</a>
         @if (user.role === UserRole.ADMIN) {
           <a routerLink="/admin" routerLinkActive="active">Admin</a>
         }
       </nav>
-
-      <div class="upload-section">
-        <a routerLink="/upload" routerLinkActive="active">Upload</a>
-      </div>
-
+      @if (user.approved) {
+        <div class="upload-section">
+          <a routerLink="/upload" routerLinkActive="active">Upload</a>
+        </div>
+      }
       <div class="user-menu">
         <span class="profile-picture">
           <app-profile-picture

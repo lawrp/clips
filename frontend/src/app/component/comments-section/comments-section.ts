@@ -5,11 +5,13 @@ import { Comment } from '../comment/comment';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../services/auth';
 import { SnackbarService } from '../../services/snackbar';
+import { ProfilePicture } from '../profile-picutre/profile-picture';
+import { AsyncPipe } from '@angular/common';
 
 
 @Component({
   selector: 'app-comments-section',
-  imports: [Comment, FormsModule],
+  imports: [Comment, FormsModule, ProfilePicture, AsyncPipe],
   templateUrl: './comments-section.html',
   styleUrl: './comments-section.scss',
 })

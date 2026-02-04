@@ -31,7 +31,7 @@ export class AdminService {
   }
 
   updateUserApproval(userId: number, approved: boolean): Observable<UserApprovalUpdate> {
-    return this.httpClient.patch<UserApprovalUpdate>(`${this.apiUrl}/api/admins/${userId}/approval`, { approved });
+    return this.httpClient.patch<UserApprovalUpdate>(`${this.apiUrl}/api/admin/users/${userId}/approval`, { approved });
   }
 
   deleteUser(userId: number): Observable<void> {

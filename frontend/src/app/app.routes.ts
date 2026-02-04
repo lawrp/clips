@@ -11,6 +11,7 @@ import { RecoverPage } from './auth/recover-page/recover-page';
 import { ResetPassword } from './auth/reset-password/reset-password';
 import { AdminPanel } from './pages/admin-panel/admin-panel';
 import { adminGuard } from './guards/admin-guard-guard';
+import { NotFoundPage } from './pages/not-found-page/not-found-page';
 
 export const routes: Routes = [
     { path: 'login', component: Login, title: 'Login Page', canActivate: [guestGuard] },
@@ -24,5 +25,6 @@ export const routes: Routes = [
     { path: 'upload', component: Upload, title: 'Upload Your Clip', canActivate: [authGuard] },
     { path: 'admin', component: AdminPanel, title: 'Admin Panel', canActivate: [adminGuard] },
 
-    { path: '', redirectTo: '/login', pathMatch: 'full' }
+    { path: '', redirectTo: '/login', pathMatch: 'full' },
+    { path: '**', component: NotFoundPage, title: '404 - Page Not Found' }
 ];

@@ -1,2 +1,44 @@
-<div class="clip-page-header"></div>
-<h1 class="clip-page-header title">Recent Clips</h1>
+<div class="home-container">
+  <div class="home-header">
+    <h1 class="page-title">Recent Clips</h1>
+  </div>
+
+  <div class="feed-grid">
+    @for (clip of clips(); track clip.id) {
+      <div class="clip-card">
+        <div class="clip-thumbnail">
+          @if (activeClips().has(clip.id)) {
+            <app-video-player [clipId]="clip.id" [controls]="true" [autoplay]="true"></app-video-player>
+          } @else {
+            <app-clip-thumbnail [clip]="clip" (play)="activateClip(clip.id)"></app-clip-thumbnail>
+          }
+          <div class="duration-badge">{{ clip.duration }}s</div>
+        </div>
+        <div class="clip-info" (click)="navigateToClip(clip.id)">
+          <h3 class="clip-title">{{ clip.title }}</h3>
+          <p class="clip-meta">
+            <span class="clip-username">{{ clip.username }}</span>
+            <span class="clip-separator">•</span>
+            <span class="clip-date">{{ clip.uploaded_at | date: 'short' }}</span>
+          </p>
+        </div>
+      </div>
+    }
+
+    @if (clips().length === 0 && !isLoading()) {
+      <div class="empty-state">
+        <p>No clips yet. Be the first to upload!</p>
+      </div>
+    }
+  </div>
+
+  <!-- Sentinel element for infinite scroll -->
+  <div #sentinel class="sentinel">
+    @if (isLoading()) {
+      <div class="loading-spinner"></div>
+    }
+    @if (!hasMore() && clips().length > 0) {
+      <p class="end-message">You've reached the end!</p>
+    }
+  </div>
+</div>

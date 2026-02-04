@@ -50,4 +50,12 @@ export class ClipService {
   deleteClipById(video_id: number) {
     return this.httpClient.delete<void>(`${this.apiUrl}/api/clips/${video_id}`);
   }
+
+  getFeed(cursor?: number, limit: number = 5): Observable<Clip[]> {
+    const params: any = { limit };
+    if (cursor) {
+      params.cursor = cursor;
+    }
+    return this.httpClient.get<Clip[]>(`${this.apiUrl}/api/feed`, { params });
+  }
 }

@@ -4,53 +4,56 @@
     <h3>{{ comments().length }} {{ comments().length === 1 ? 'Comment' : 'Comments' }}</h3>
   </div>
 
-  <!-- Leave comment form -->
-  <div class="leave-comment-div">
-    <img 
-      class="profile-icon" 
-      src="assets/default-avatar.png" 
-      alt="Your avatar"
-    />
-    <div class="comment-input-wrapper">
-      <textarea 
-        [(ngModel)]="commentMessage" 
-        placeholder="Add a comment..." 
-        class="comment-message-body"
-        [disabled]="isSubmitting()"
-      ></textarea>
-      
-      @if (commentMessage().trim().length > 0) {
-        <div class="comment-actions">
-          <button 
-            class="cancel-btn"
-            (click)="commentMessage.set('')"
-            [disabled]="isSubmitting()"
-          >
-            Cancel
-          </button>
-          <button 
-            class="post-comment-btn"
-            (click)="postComment()" 
-            [disabled]="!commentMessage().trim() || isSubmitting()"
-          >
-            {{ isSubmitting() ? 'Posting...' : 'Comment' }}
-          </button>
-        </div>
+  @if (authService.isAuthenticated()) {
+    <div class="leave-comment-div">
+      @if (authService.currentUser$ | async; as user) {
+        <app-profile-picture
+          [profilePictureUrl]="user.profile_picture_url"
+          [username]="user.username"
+          [userId]="user.id"
+          [size]="'medium'"
+          [clickable]="false"
+          [showBorder]="true"
+        >
+        </app-profile-picture>
       }
+      <div class="comment-input-wrapper">
+        <textarea
+          [(ngModel)]="commentMessage"
+          placeholder="Add a comment..."
+          class="comment-message-body"
+          [disabled]="isSubmitting()"
+        ></textarea>
+
+        @if (commentMessage().trim().length > 0) {
+          <div class="comment-actions">
+            <button class="cancel-btn" (click)="commentMessage.set('')" [disabled]="isSubmitting()">
+              Cancel
+            </button>
+            <button
+              class="post-comment-btn"
+              (click)="postComment()"
+              [disabled]="!commentMessage().trim() || isSubmitting()"
+            >
+              {{ isSubmitting() ? 'Posting...' : 'Comment' }}
+            </button>
+          </div>
+        }
+      </div>
     </div>
-  </div>
-  
+  }
   <!-- Comments list -->
   <div class="comments-list">
     @if (comments().length > 0) {
       @for (comment of comments(); track comment.id) {
-        <app-comment 
+        <app-comment
           [comment]="comment"
           (delete)="handleDelete($event)"
           (like)="handleLike($event)"
           (dislike)="handleDislike($event)"
           (edit)="handleEdit($event)"
-          (reply)="handleReply($event)">
+          (reply)="handleReply($event)"
+        >
         </app-comment>
       }
     } @else {

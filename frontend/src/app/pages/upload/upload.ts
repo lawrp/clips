@@ -37,19 +37,19 @@ export class Upload {
 
   // EXISTING - works as-is
   onFileSelected(event: Event) {
-    console.log('On File Selected running...')
+    console.log('On File Selected running...');
     const input = event.target as HTMLInputElement;
     console.log(event);
     console.log(event.target);
-    console.log(input.files)
+    console.log(input.files);
     if (!input.files || input.files.length === 0) return;
 
     const files = Array.from(input.files);
     const validFiles = files.filter((file) => {
       return this.validateFile(file);
     });
-  
-    console.log(validFiles)
+
+    console.log(validFiles);
     this.selectedFiles.set(validFiles);
 
     if (validFiles.length === 1) {
@@ -80,15 +80,15 @@ export class Upload {
     try {
       // Use the service to process dropped items (files or folders)
       const files = await this.fileProcessor.processDroppedItems(event.dataTransfer);
-      
+
       if (files.length === 0) {
         this.snackbarService.show('No valid video files found', 'error');
         return;
       }
 
       // Filter through your existing validation
-      const validFiles = files.filter(file => this.validateFile(file));
-      
+      const validFiles = files.filter((file) => this.validateFile(file));
+
       if (validFiles.length === 0) {
         return; // validateFile already showed error messages
       }
@@ -142,35 +142,51 @@ export class Upload {
 
     if (index >= files.length) {
       this.isUploading.set(false);
-      const message = this.isSingleUpload ? 'Clip uploaded successfully!' :
-      `Successfully uploaded ${files.length} clips!`;
+
+      const message = this.isSingleUpload
+        ? 'Clip uploaded successfully!'
+        : `Successfully uploaded ${files.length} clips!`;
+
       this.snackbarService.show(message, 'success');
       this.goToProfile();
+
       return;
     }
 
     const file = files[index];
-    const title = this.isSingleUpload ? this.title() : file.name.replace(/\.[^/.]+$/, '');
+    const title = this.isSingleUpload 
+      ? this.title() 
+      : file.name.replace(/\.[^/.]+$/, '');
     const description = this.isSingleUpload ? this.description() : '';
 
     this.uploadProgress.set(0);
 
     this.clipService.uploadClip(file, title, description).subscribe({
       next: (event) => {
+
         if (event.type === HttpEventType.UploadProgress && event.total) {
-          const progress = Math.round(100 * event.loaded / event.total);
+          const progress = Math.round((100 * event.loaded) / event.total);
           this.uploadProgress.set(progress);
-        } else if (event.type === HttpEventType.Response) {
-          this.currentFileIndex.set(index + 1);
-          this.uploadNextFile();
+          return;
+        } 
+        if (event.type === HttpEventType.Response) {
+        this.currentFileIndex.set(index + 1);
+        this.uploadNextFile();
         }
       },
       error: (e) => {
-        this.snackbarService.show(`Failed to upload ${file.name}: ${e.error?.detail || 'Unknown Error!'}`, 'error');
-        this.currentFileIndex.set(index + 1);
-        this.uploadNextFile();
-      }
-    })
+        this.isUploading.set(false);
+
+        if (e.status === 403) {
+          this.snackbarService.show('You are not approved to upload clips.', 'error', 3000);
+          return;
+        }
+        this.snackbarService.show(
+          `Failed to upload ${file.name}: ${e.error?.detail || 'Unknown Error!'}`,
+          'error',
+        );
+      },
+    });
   }
 
   cancelUpload() {

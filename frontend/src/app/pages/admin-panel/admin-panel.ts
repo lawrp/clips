@@ -66,6 +66,7 @@ export class AdminPanel implements OnInit {
 
     this.adminService.getAllUsers(params).subscribe({
       next: (users) => {
+        console.log(users);
         this.users.set(users);
         this.isLoading.set(false);
       },
@@ -144,6 +145,5 @@ export class AdminPanel implements OnInit {
     this.approvalFilter.set(null);
     this.loadUsers();
   }
-
 
 }

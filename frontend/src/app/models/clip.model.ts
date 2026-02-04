@@ -3,6 +3,7 @@ export interface Clip {
     user_id: number;
     filename: string;
     file_path: string;
+    thumbnail_path: string | null;
     title: string;
     description: string | null;
     uploaded_at: string;
@@ -11,6 +12,7 @@ export interface Clip {
     username: string;
     likes: number;
     user_has_liked: boolean
+    private: boolean
 }
 
 export interface ClipUploadRequest {
@@ -27,4 +29,5 @@ export interface ClipLikeResponse {
 export interface ClipUpdate {
     title?: string;
     description?: string;
+    private?: boolean
 }

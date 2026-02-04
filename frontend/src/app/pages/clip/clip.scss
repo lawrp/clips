@@ -1,3 +1,33 @@
+.clip-not-found {
+  max-width: 480px;
+  margin: 6rem auto;
+  text-align: center;
+  padding: 2rem;
+}
+
+.clip-not-found h1 {
+  font-size: 2rem;
+  font-weight: 600;
+  color: var(--color-primary);
+}
+
+.clip-not-found p {
+  margin: 1rem 0 2rem;
+  color: var(--text-gray);
+}
+
+.back-home {
+  display: inline-block;
+  padding: 0.6rem 1.5rem;
+  background: var(--color-primary);
+  color: white;
+  border-radius: 999px;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+
+
 .clip-page-container {
   max-width: 1280px;
   margin: 0 auto;
@@ -178,11 +208,64 @@
     padding: 20px 24px;
     display: flex;
     justify-content: space-between;
-    align-items: center;
+    align-items: flex-start;
     gap: 20px;
 
     .video-info {
       flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+
+      .video-info-row {
+        display: flex;
+        align-items: flex-start;
+        gap: 20px;
+      }
+
+      .owner-info {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-shrink: 0;
+
+        .owner-details {
+          display: flex;
+          flex-direction: column;
+          gap: 2px;
+        }
+
+        .owner-username {
+          color: #ffffff;
+          font-size: 14px;
+          font-weight: 600;
+          letter-spacing: 0.2px;
+        }
+
+        .owner-meta {
+          color: rgba(255, 255, 255, 0.45);
+          font-size: 12px;
+        }
+      }
+
+      .description-block {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .video-description {
+        color: #e0e0e0;
+        margin: 0;
+        font-size: 15px;
+        line-height: 1.6;
+
+        &.no-description {
+          color: rgba(255, 255, 255, 0.35);
+          font-style: italic;
+        }
+      }
 
       .clip-description-edit {
         display: flex;
@@ -277,7 +360,7 @@
         border-radius: 6px;
         transition: all 0.2s ease;
         box-shadow: 0 2px 6px rgba(30, 64, 175, 0.15);
-        margin-top: 8px;
+        align-self: flex-start;
 
         &:hover {
           transform: translateY(-2px);
@@ -293,29 +376,12 @@
           filter: grayscale(100%) brightness(5);
         }
       }
-
-      .video-info {
-        flex: 1;
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
-      }
-      .video-description {
-        color: #e0e0e0;
-        margin: 0;
-        font-size: 15px;
-        line-height: 1.6;
-
-        &.no-description {
-          color: var(--text-light-gray);
-          font-style: italic;
-        }
-      }
     }
 
     .video-actions {
       display: flex;
       gap: 12px;
+      flex-shrink: 0;
     }
 
     .video-like-btn {
@@ -441,9 +507,22 @@ app-comments-section {
       align-items: stretch;
       gap: 16px;
 
-      .video-info .video-description {
-        font-size: 14px;
+      .video-info {
+        .video-info-row {
+          flex-direction: column;
+          gap: 12px;
+        }
+
+        .description-block {
+          align-items: flex-start;
+        }
+
+        .video-description {
+          font-size: 14px;
+        }
+      
       }
+
 
       .video-actions {
         justify-content: flex-end;

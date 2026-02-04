@@ -1,0 +1,97 @@
+// clip-thumbnail.component.scss
+:host {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.thumbnail-wrapper {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  cursor: pointer;
+  overflow: hidden;
+
+  // Shared base for both the image and the placeholder
+  .thumbnail-img,
+  .thumbnail-placeholder {
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+
+  // Actual generated thumbnail
+  .thumbnail-img {
+    object-fit: cover;
+    transition: filter 0.3s ease, transform 0.3s ease;
+  }
+
+  // Fallback when thumbnail hasn't generated yet
+  .thumbnail-placeholder {
+    background: linear-gradient(135deg, var(--input-bg) 0%, var(--input-border) 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    .placeholder-icon {
+      font-size: 2.5rem;
+      opacity: 0.4;
+    }
+  }
+
+  // Play button overlay — sits on top of both image and placeholder
+  .play-overlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0);
+    transition: background 0.3s ease;
+  }
+
+  .play-button {
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.6);
+    border: 3px solid rgba(255, 255, 255, 0.9);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    opacity: 0.85;
+    transition: transform 0.2s ease, opacity 0.2s ease, background 0.2s ease;
+
+    .play-icon {
+      width: 22px;
+      height: 22px;
+      margin-left: 3px; // optical centering offset for the triangle
+    }
+  }
+
+  // Hover states
+  &:hover {
+    .thumbnail-img {
+      filter: brightness(0.75);
+      transform: scale(1.03);
+    }
+
+    .play-overlay {
+      background: rgba(0, 0, 0, 0.15);
+    }
+
+    .play-button {
+      transform: scale(1.1);
+      opacity: 1;
+      background: var(--color-primary);
+    }
+  }
+
+  // Active/pressed state
+  &:active {
+    .play-button {
+      transform: scale(0.95);
+    }
+  }
+}

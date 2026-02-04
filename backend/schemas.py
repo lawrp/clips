@@ -18,6 +18,7 @@ class UserResponse(BaseModel):
     id: int
     username: str
     created_at: datetime
+    email: str
     profile_picture_url: Optional[str] = None
     role: UserRole
     approved: bool
@@ -37,6 +38,7 @@ class ClipResponse(BaseModel):
     user_id: int
     filename: str
     file_path: str
+    thumbnail_path: Optional[str] = None
     uploaded_at: datetime
     file_size: int
     duration: Optional[int] = None
@@ -45,6 +47,7 @@ class ClipResponse(BaseModel):
     description: Optional[str] = None
     likes: int
     user_has_liked: bool = False
+    private: bool
     
     class Config:
         from_attributes = True
@@ -56,6 +59,7 @@ class ClipResponse(BaseModel):
 class ClipUpdate(BaseModel):
     title: Optional[str] = None
     description: Optional[str] = None
+    private: Optional[bool] = None
 
 class ClipUpload(BaseModel):
     title: str
@@ -111,3 +115,12 @@ class UserRoleUpdate(BaseModel):
 
 class UserApprovalUpdate(BaseModel):
     approved: bool
+    
+class AdminStats(BaseModel):
+    total_users: int
+    pending_approvals: int
+    approved_users: int
+    total_videos: int
+    total_comments: int
+    admins: int
+    moderators: int

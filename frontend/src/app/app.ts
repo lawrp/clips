@@ -4,10 +4,11 @@ import { AuthService } from './services/auth';
 import { Subscription } from 'rxjs';
 import { Header } from './component/header/header';
 import { Snackbar } from './component/snackbar/snackbar';
+import { NoAuthHeader } from './component/no-auth-header/no-auth-header';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, Header, Snackbar],
+  imports: [RouterOutlet, Header, Snackbar, NoAuthHeader],
   templateUrl: './app.html',
   styleUrl: './app.scss'
 })
