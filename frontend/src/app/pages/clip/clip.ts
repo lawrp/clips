@@ -10,10 +10,11 @@ import { ProfilePicture } from '../../component/profile-picutre/profile-picture'
 import { ProfileService } from '../../services/profile';
 import { DatePipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
+import { ShareButton } from '../../component/share-button/share-button';
 @Component({
   selector: 'app-clip',
   standalone: true,
-  imports: [CommentsSection, VideoPlayer, FormsModule, ProfilePicture, DatePipe, RouterLink],
+  imports: [CommentsSection, VideoPlayer, FormsModule, ProfilePicture, DatePipe, RouterLink, ShareButton],
   templateUrl: './clip.html',
   styleUrl: './clip.scss',
 })

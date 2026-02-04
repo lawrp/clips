@@ -1,0 +1,31 @@
+.share-btn {
+  background: transparent;
+  border: 2px solid var(--input-border);
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s ease;
+  color: var(--text-gray);
+  font-size: 14px;
+  font-weight: 600;
+
+  .share-icon {
+    width: 18px;
+    height: 18px;
+  }
+
+  &:hover {
+    background-color: rgba(59, 130, 246, 0.1);
+    border-color: var(--color-primary);
+    color: var(--color-primary);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(30, 64, 175, 0.15);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+}

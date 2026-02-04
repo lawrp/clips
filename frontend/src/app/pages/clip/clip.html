@@ -61,80 +61,83 @@
         <app-video-player [clipId]="clipId"></app-video-player>
       </div>
       <div class="video-footer">
-        <div class="video-info">
-          <div class="video-info-row">
-            <div class="owner-info">
-              <app-profile-picture
-                [profilePictureUrl]="uploaderProfilePic()"
-                [username]="clip()?.username ?? ''"
-                [userId]="clip()?.user_id"
-                [size]="'medium'"
-                [clickable]="true"
-                [showBorder]="true"
-              >
-              </app-profile-picture>
-              <div class="owner-details">
-                <span class="owner-username">{{ clip()?.username }}</span>
-                <span class="owner-meta">{{ clip()?.uploaded_at | date: 'MMM d, yyyy' }}</span>
-              </div>
+        <div class="video-header">
+          <div class="owner-info">
+            <app-profile-picture
+              [profilePictureUrl]="uploaderProfilePic()"
+              [username]="clip()?.username ?? ''"
+              [userId]="clip()?.user_id"
+              [size]="'medium'"
+              [clickable]="true"
+              [showBorder]="true"
+            >
+            </app-profile-picture>
+            <div class="owner-details">
+              <span class="owner-username">{{ clip()?.username }}</span>
+              <span class="owner-meta">{{ clip()?.uploaded_at | date: 'MMM d, yyyy' }}</span>
             </div>
+          </div>
 
-            <div class="description-block">
-              @if (isClipOwner && editDescription()) {
-                <div class="clip-description-edit">
-                  <textarea
-                    [(ngModel)]="clipDescription"
-                    class="clip-description-edit-body"
-                    [disabled]="isSubmitting()"
-                    placeholder="Enter clip description..."
-                  ></textarea>
-                  <div class="edit-description-form-controls">
-                    <button
-                      class="confirm-edit-description"
-                      (click)="postEditDescription()"
-                      [disabled]="isSubmitting()"
-                    >
-                      <span class="confirm-edit-description-text">✓</span>
-                    </button>
-                    <button
-                      class="cancel-edit-description"
-                      (click)="cancelEditDescription()"
-                      [disabled]="isSubmitting()"
-                    >
-                      <span class="cancel-edit-description-text">✕</span>
-                    </button>
-                  </div>
-                </div>
-              } @else {
-                @if (clip()?.description) {
-                  <p class="video-description">{{ clipDescription() }}</p>
-                } @else {
-                  <p class="video-description no-description">No description provided</p>
-                }
-                @if (isClipOwner) {
-                  <button
-                    class="description-edit-button"
-                    (click)="onEditDescription()"
-                    title="Edit description"
-                  >
-                    <span class="edit-icon">✏️</span>
-                  </button>
-                }
-              }
-            </div>
+          <div class="video-actions">
+            <button
+              class="video-like-btn"
+              (click)="onLikeClip()"
+              [class.active]="user_has_liked()"
+              [disabled]="!authService.isAuthenticated()"
+            >
+              <span class="icon">👍</span>
+              <span class="count">{{ clipLikes() }}</span>
+            </button>
+
+            <app-share-button [clip]="clip()!" [showLabel]="true"></app-share-button>
           </div>
         </div>
 
-        <div class="video-actions">
-          <button
-            class="video-like-btn"
-            (click)="onLikeClip()"
-            [class.active]="user_has_liked()"
-            [disabled]="!authService.isAuthenticated()"
-          >
-            <span class="icon">👍</span>
-            <span class="count">{{ clipLikes() }}</span>
-          </button>
+        <div class="video-content">
+          @if (isClipOwner && editDescription()) {
+            <!-- Edit mode for description -->
+            <div class="clip-description-edit">
+              <textarea
+                [(ngModel)]="clipDescription"
+                class="clip-description-edit-body"
+                [disabled]="isSubmitting()"
+                placeholder="Enter clip description..."
+              ></textarea>
+              <div class="edit-description-form-controls">
+                <button
+                  class="confirm-edit-description"
+                  (click)="postEditDescription()"
+                  [disabled]="isSubmitting()"
+                >
+                  <span class="confirm-edit-description-text">✓</span>
+                </button>
+                <button
+                  class="cancel-edit-description"
+                  (click)="cancelEditDescription()"
+                  [disabled]="isSubmitting()"
+                >
+                  <span class="cancel-edit-description-text">✕</span>
+                </button>
+              </div>
+            </div>
+          } @else {
+            <!-- Display mode for description -->
+            @if (clip()?.description) {
+              <p class="video-description">{{ clipDescription() }}</p>
+            } @else {
+              <p class="video-description no-description">No description provided</p>
+            }
+            @if (isClipOwner) {
+              <button
+                class="description-edit-button"
+                (click)="onEditDescription()"
+                title="Edit description"
+              >
+                <span class="edit-icon">✏️</span>
+                <span>Edit</span>
+              </button>
+            }
+          }
         </div>
       </div>
     </div>

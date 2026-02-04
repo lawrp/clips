@@ -10,7 +10,10 @@
   --bg-gradient-start: #1e3a8a;
   --bg-gradient-mid: #1e40af;
   --bg-gradient-end: #1d4ed8;
-  
+  --bg-primary: #fafaf9;
+  --bg-card: #ffffff;
+  --bg-secondary: #fefce8;
+
   // Text colors
   --text-white: #ffffff;
   --text-dark: #1e3a8a;
@@ -40,6 +43,7 @@
 }
 
 body {
+  background-color: #f1f5f9;
   margin: 0;
   padding: 0;
   overflow-x: hidden;

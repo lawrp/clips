@@ -5,5 +5,7 @@
     [src]="videoUrl"
     [autoplay]="autoplay"
     [controls]="controls"
+    [volume]="volumeService.volume()"
+    (volumechange)="onVolumeChange($event)"
   ></video>
 </div>

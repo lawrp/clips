@@ -1,7 +1,6 @@
 import { Component, inject, signal, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
-import { RouterLink } from '@angular/router';
 import { AdminStats, UserRole } from '../../models/roles.model';
 import { StatusType, User } from '../../models/auth.model';
 import { AuthService } from '../../services/auth';
@@ -10,7 +9,7 @@ import { SnackbarService } from '../../services/snackbar';
 import { ProfilePicture } from '../../component/profile-picutre/profile-picture';
 @Component({
   selector: 'app-admin-panel',
-  imports: [FormsModule, CommonModule, RouterLink, ProfilePicture],
+  imports: [FormsModule, CommonModule, ProfilePicture],
   templateUrl: './admin-panel.html',
   styleUrl: './admin-panel.scss',
 })
