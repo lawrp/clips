@@ -28,7 +28,7 @@ jobs:
           context: ./backend
           file: ./backend/Dockerfile
           push: true
-          platforms: linux/amd64, linux/arm64
+          platforms: linux/amd64,linux/arm64
           tags: |
             ${{ secrets.DOCKERHUB_USERNAME }}/clips-backend:latest
             ${{ secrets.DOCKERHUB_USERNAME }}/clips-backend:${{ github.sha }}
@@ -41,7 +41,7 @@ jobs:
           context: ./frontend
           file: ./frontend/Dockerfile
           push: true
-          platforms: linux/amd64, linux/arm64
+          platforms: linux/amd64,linux/arm64
           tags: |
             ${{ secrets.DOCKERHUB_USERNAME }}/clips-frontend:latest
             ${{ secrets.DOCKERHUB_USERNAME }}/clips-frontend:${{ github.sha }}
