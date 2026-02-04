@@ -26,6 +26,7 @@ __pycache__/
 .Python
 
 # Database files
+clips.db
 *.db
 *.sqlite
 *.sqlite3
