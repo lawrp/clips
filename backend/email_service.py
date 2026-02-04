@@ -12,7 +12,7 @@ def send_username_recovery_email(to_email: str, username: str):
     message = Mail(
         from_email='noreply@joycliff.net',
         to_emails=to_email,
-        subject='Username Recovery - Clip Champ',
+        subject='Username Recovery - ClipHub',
         html_content=f'''
             <div style="font-family: Arial, sans-serif; padding: 20px;">
                 <h2>Username Recovery</h2>
@@ -38,7 +38,7 @@ def send_password_recovery_email(to_email: str, link: str):
     message = Mail(
         from_email='noreply@joycliff.net',
         to_emails=to_email,
-        subject='Password Reset - Clip Champ',
+        subject='Password Reset - ClipHub',
         html_content=f'''
             <div style="font-family: Arial, sans-serif; padding: 20px;">
                 <h2>Password Reset Request</h2>

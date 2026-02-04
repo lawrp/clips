@@ -31,7 +31,7 @@ async def lifespan(app: FastAPI):
     create_admin_user()
     mount_static_files(app)
     yield
-    print("👋 Shutting down Clip Champ API...")
+    print("👋 Shutting down ClipHub API...")
 
 
 app = FastAPI(lifespan=lifespan)

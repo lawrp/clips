@@ -13,7 +13,7 @@ import { NoAuthHeader } from './component/no-auth-header/no-auth-header';
   styleUrl: './app.scss'
 })
 export class App implements OnInit, OnDestroy {
-  protected readonly title = signal('Clip Champ');
+  protected readonly title = signal('ClipHub');
   authService = inject(AuthService);
   isAuthenticated = signal<boolean>(false);
   authSubscription!: Subscription
