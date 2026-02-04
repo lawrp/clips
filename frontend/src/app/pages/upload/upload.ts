@@ -37,19 +37,13 @@ export class Upload {
 
   // EXISTING - works as-is
   onFileSelected(event: Event) {
-    console.log('On File Selected running...');
     const input = event.target as HTMLInputElement;
-    console.log(event);
-    console.log(event.target);
-    console.log(input.files);
     if (!input.files || input.files.length === 0) return;
 
     const files = Array.from(input.files);
     const validFiles = files.filter((file) => {
       return this.validateFile(file);
     });
-
-    console.log(validFiles);
     this.selectedFiles.set(validFiles);
 
     if (validFiles.length === 1) {
@@ -93,7 +87,6 @@ export class Upload {
         return; // validateFile already showed error messages
       }
 
-      console.log(`Processed ${validFiles.length} file(s) from drop`);
       this.selectedFiles.set(validFiles);
 
       if (validFiles.length === 1) {

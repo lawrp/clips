@@ -124,7 +124,6 @@ export class AuthService {
   }
 
   refreshUser(): Observable<User> {
-    console.log('refreshing current user...')
     return this.fetchCurrentUser();
   }
 
@@ -132,7 +131,6 @@ export class AuthService {
     return this.httpClient.get<User>(`${this.apiUrl}/api/users/me`).pipe(
       tap((user) => {
         this.currentUserSubject.next(user);
-        console.log(`refreshing with... ${user}`)
       }),
     );
   }

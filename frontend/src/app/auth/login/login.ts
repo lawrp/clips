@@ -29,12 +29,9 @@ export class Login {
 
     this.authService.login({ username: this.username, password: this.password }).subscribe({
       next: () => {
-        console.log('Login successful, navigating to dashboard...');
         this.router.navigate(['/dashboard'], { replaceUrl: true });
-        console.log('navigating to dashboard!');
       },
       error: (e) => {
-        console.log('Login error');
         this.loginStatus.set(e.error.detail);
         this.isError.set(true);
         this.isSubmitting.set(false);

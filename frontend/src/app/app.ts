@@ -24,7 +24,6 @@ export class App implements OnInit, OnDestroy {
     this.authSubscription = this.authService.isAuthenticated$.subscribe({
       next: (isAuth) => {
         this.isAuthenticated.set(isAuth);
-        console.log('Auth has been set to: ', this.isAuthenticated());
       },
       error: (e) => {
         console.error('There was an error', e);

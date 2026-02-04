@@ -103,7 +103,6 @@ export class Home implements OnInit {
   }
 
   ngAfterViewInit() {
-    console.log('Setting up observer, sentinel exists:', !!this.sentinel)
     this.setupIntersectionObserver();
   }
 

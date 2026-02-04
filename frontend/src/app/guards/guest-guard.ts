@@ -13,7 +13,6 @@ export const guestGuard: CanActivateFn = () => {
     take(1),
     map(isAuthed => {
       const canEnter = !isAuthed;
-      console.log('Guest guard - can enter:', canEnter);
       return canEnter ? true : router.createUrlTree(['/dashboard']);
     })
   );

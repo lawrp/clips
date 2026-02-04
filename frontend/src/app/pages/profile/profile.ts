@@ -217,7 +217,6 @@ export class Profile implements OnInit, OnDestroy {
 
     this.profileService.uploadProfilePicture(file).subscribe({
       next: (user) => {
-        console.log('Entering next block in uploadProfilePicture');
         this.isUploading.set(false);
         this.statusMessage.set('Profile picture updated successfully!');
         this.statusType.set('success');

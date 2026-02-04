@@ -12,7 +12,6 @@ export const authGuard: CanActivateFn = () => {
     switchMap(() => auth.isAuthenticated$),
     take(1),
     map(isAuthed => {
-      console.log('Auth guard - authenticated:', isAuthed);
       return isAuthed ? true : router.createUrlTree(['/login']);
     })
   );

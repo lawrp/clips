@@ -53,14 +53,11 @@ export class RecoverPage {
         this.statusMessage.set("If that email exists, we've sent your username to it.");
         this.statusType.set('success');
         emailForm.reset();
-        console.log(res);
       },
       error: (err) => {
         this.isSubmitting.set(false);
         this.statusMessage.set('Failed to send recovery email. Please try again.');
         this.statusType.set('error');
-
-        console.log(this.email());
         console.error('Error recovering username', err);
       },
     });
@@ -91,14 +88,11 @@ export class RecoverPage {
           );
           this.statusType.set('success');
           passwordForm.reset();
-          console.log(res);
         },
         error: (err) => {
           this.isSubmitting.set(false);
           this.statusMessage.set('Failed to send recovery email. Please try again.');
           this.statusType.set('error');
-
-          console.log(this.email());
           console.error('Error recovering username', err);
         },
       });
