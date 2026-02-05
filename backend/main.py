@@ -39,8 +39,8 @@ app = FastAPI(lifespan=lifespan)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://localhost:4200",
-                   "https://clips.joycliff.net",
-                   "https://192.168.11.180"],
+                   "https://clipapi.joycliff.net",
+                   "https://192.168.11.175"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"]
