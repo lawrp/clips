@@ -8,7 +8,11 @@
       <div class="clip-card">
         <div class="clip-thumbnail">
           @if (activeClips().has(clip.id)) {
-            <app-video-player [clipId]="clip.id" [controls]="true" [autoplay]="true"></app-video-player>
+            <app-video-player
+              [clipId]="clip.id"
+              [controls]="true"
+              [autoplay]="true"
+            ></app-video-player>
           } @else {
             <app-clip-thumbnail [clip]="clip" (play)="activateClip(clip.id)"></app-clip-thumbnail>
           }
@@ -32,13 +36,10 @@
     }
   </div>
 
-  <!-- Sentinel element for infinite scroll -->
-  <div #sentinel class="sentinel">
-    @if (isLoading()) {
-      <div class="loading-spinner"></div>
-    }
-    @if (!hasMore() && clips().length > 0) {
-      <p class="end-message">You've reached the end!</p>
-    }
-  </div>
+  @if (isLoading()) {
+    <div class="loading-spinner"></div>
+  }
+  @if (!hasMore() && clips().length > 0) {
+    <p class="end-message">You've reached the end!</p>
+  }
 </div>
