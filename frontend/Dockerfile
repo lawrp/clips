@@ -15,7 +15,7 @@ RUN npm ci
 COPY . .
 
 # Build for prod
-RUN npm run build -- --configuration production
+RUN npm run build -- --configuration production --source-map
 
 #Serve with NGINX
 FROM nginx:alpine
