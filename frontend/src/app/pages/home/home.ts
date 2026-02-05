@@ -1,5 +1,5 @@
-import { Component, ElementRef, HostListener, inject, OnDestroy, signal, ViewChild } from '@angular/core';
-import { OnInit } from '@angular/core';
+import { Component, ElementRef, inject, signal, ViewChild } from '@angular/core';
+import { OnInit, OnDestroy, AfterViewInit } from '@angular/core';
 import { ClipService } from '../../services/clip-service';
 import { Clip } from '../../models/clip.model';
 import { SnackbarService } from '../../services/snackbar';
@@ -14,7 +14,7 @@ import { Router } from '@angular/router';
   templateUrl: './home.html',
   styleUrl: './home.scss',
 })
-export class Home implements OnInit {
+export class Home implements OnInit, OnDestroy, AfterViewInit {
 
   @ViewChild('sentinel', { read: ElementRef }) sentinel!: ElementRef
 
@@ -27,23 +27,10 @@ export class Home implements OnInit {
   isLoading = signal<boolean>(false);
   hasMore = signal<boolean>(true);
 
-  private loadingMore = signal<boolean>(false);
+  private observer?: IntersectionObserver;
 
   ngOnInit() {
     this.loadInitialClips();
-  }
-
-  @HostListener('window:scroll', ['$event'])
-  onScroll() {
-    if (this.loadingMore() || !this.hasMore || this.isLoading()) return;
-
-    const scrollPosition = window.innerHeight + window.scrollY;
-    const threshhold = document.documentElement.scrollHeight - 500;
-
-    if (scrollPosition >= threshhold) {
-      this.loadingMore.set(true);
-      this.loadMoreClips();
-    }
   }
 
   loadInitialClips() {
@@ -67,16 +54,16 @@ export class Home implements OnInit {
   loadMoreClips() {
     if (this.isLoading() || !this.hasMore()) return;
 
+    const currentClips = this.clips();
+    if (currentClips.length === 0) return;
+
+    const cursor = currentClips[currentClips.length - 1].id
     this.isLoading.set(true);
-    const lastClip = this.clips()[this.clips().length - 1]
-    const cursor = lastClip?.id
 
     this.clipService.getFeed(cursor).subscribe({
       next: (newClips) => {
         this.clips.update(current => [...current, ...newClips]);
         this.isLoading.set(false);
-        this.loadingMore.set(false);
-
         if (newClips.length < 5) {
           this.hasMore.set(false);
         }
@@ -85,13 +72,38 @@ export class Home implements OnInit {
         console.error('Failed to load more clips:', err);
         this.snackbarService.show('Failed to fetch more clips', 'error', 3000);
         this.isLoading.set(false);
-        this.loadingMore.set(false);
       }
     });
   }
 
+  setupIntersectionObserver() {
+    this.observer = new IntersectionObserver(
+      (entries) => {
+        const entry = entries[0];
+        if (entry.isIntersecting) {
+          this.loadMoreClips();
+        }
+      },
+      { threshold: 0.1 }
+    );
+
+    if (this.sentinel) {
+      this.observer.observe(this.sentinel.nativeElement)
+    }
+  }
+
   activateClip(clipId: number) {
     this.activeClips.update(current => new Set(current).add(clipId));
+  }
+
+  ngOnDestroy() {
+    if (this.observer) {
+      this.observer.disconnect();
+    }
+  }
+
+  ngAfterViewInit() {
+    this.setupIntersectionObserver();
   }
 
   navigateToClip(clipId: number) {
