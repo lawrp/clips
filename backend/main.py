@@ -943,7 +943,7 @@ def get_admin_stats(current_user: User = Depends(require_admin), db: Session = D
 def get_feed(
     cursor: Optional[int] = None,
     limit: int = 8,
-    current_user: Optional[User] = Depends(get_current_user_optional),
+    current_user: User = Depends(require_approved),
     db: Session = Depends(get_db)
 ):
     query = db.query(Clip).join(User).filter(Clip.private == False)
