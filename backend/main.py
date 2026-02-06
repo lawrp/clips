@@ -942,7 +942,7 @@ def get_admin_stats(current_user: User = Depends(require_admin), db: Session = D
 @app.get("/api/feed", response_model=List[ClipResponse])
 def get_feed(
     cursor: Optional[int] = None,
-    limit: int = 5,
+    limit: int = 8,
     current_user: Optional[User] = Depends(get_current_user_optional),
     db: Session = Depends(get_db)
 ):
