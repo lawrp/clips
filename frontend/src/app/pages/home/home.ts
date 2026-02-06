@@ -15,12 +15,11 @@ import { Router } from '@angular/router';
   styleUrl: './home.scss',
 })
 export class Home implements OnInit, OnDestroy, AfterViewInit {
-
-  @ViewChild('sentinel', { read: ElementRef }) sentinel!: ElementRef
+  @ViewChild('sentinel', { read: ElementRef }) sentinel!: ElementRef;
 
   clipService: ClipService = inject(ClipService);
   snackbarService: SnackbarService = inject(SnackbarService);
-  router = inject(Router)
+  router = inject(Router);
 
   clips = signal<Clip[]>([]);
   activeClips = signal<Set<number>>(new Set());
@@ -28,6 +27,8 @@ export class Home implements OnInit, OnDestroy, AfterViewInit {
   hasMore = signal<boolean>(true);
 
   private observer?: IntersectionObserver;
+
+  noApproval = signal<boolean>(false);
 
   ngOnInit() {
     this.loadInitialClips();
@@ -44,10 +45,16 @@ export class Home implements OnInit, OnDestroy, AfterViewInit {
         }
       },
       error: (err) => {
-        console.error('Failed to load feed:', err)
-        this.snackbarService.show('Failed to load feed', 'error', 3000);
-        this.isLoading.set(false);
-      }
+        if (err.status === 403) {
+          this.snackbarService.show('You are not approved to see clips. Ask for approval.', 'info', 3000);
+          this.isLoading.set(false);
+          this.noApproval.set(true);
+        } else {
+          console.error('Failed to load feed:', err);
+          this.snackbarService.show('Failed to load feed', 'error', 3000);
+          this.isLoading.set(false);
+        }
+      },
     });
   }
 
@@ -57,12 +64,12 @@ export class Home implements OnInit, OnDestroy, AfterViewInit {
     const currentClips = this.clips();
     if (currentClips.length === 0) return;
 
-    const cursor = currentClips[currentClips.length - 1].id
+    const cursor = currentClips[currentClips.length - 1].id;
     this.isLoading.set(true);
 
     this.clipService.getFeed(cursor).subscribe({
       next: (newClips) => {
-        this.clips.update(current => [...current, ...newClips]);
+        this.clips.update((current) => [...current, ...newClips]);
         this.isLoading.set(false);
         if (newClips.length < 5) {
           this.hasMore.set(false);
@@ -72,7 +79,7 @@ export class Home implements OnInit, OnDestroy, AfterViewInit {
         console.error('Failed to load more clips:', err);
         this.snackbarService.show('Failed to fetch more clips', 'error', 3000);
         this.isLoading.set(false);
-      }
+      },
     });
   }
 
@@ -84,16 +91,16 @@ export class Home implements OnInit, OnDestroy, AfterViewInit {
           this.loadMoreClips();
         }
       },
-      { threshold: 0.1 }
+      { threshold: 0.1 },
     );
 
     if (this.sentinel) {
-      this.observer.observe(this.sentinel.nativeElement)
+      this.observer.observe(this.sentinel.nativeElement);
     }
   }
 
   activateClip(clipId: number) {
-    this.activeClips.update(current => new Set(current).add(clipId));
+    this.activeClips.update((current) => new Set(current).add(clipId));
   }
 
   ngOnDestroy() {
@@ -107,7 +114,6 @@ export class Home implements OnInit, OnDestroy, AfterViewInit {
   }
 
   navigateToClip(clipId: number) {
-    this.router.navigate([`/clip/${clipId}`])
+    this.router.navigate([`/clip/${clipId}`]);
   }
-
 }

@@ -53,6 +53,8 @@ export class Profile implements OnInit, OnDestroy {
 
   UserRole = UserRole
 
+  noApproval = signal<boolean>(false);
+
   ngOnInit() {
     this.profileSubscription = this.route.paramMap
       .pipe(
@@ -89,7 +91,11 @@ export class Profile implements OnInit, OnDestroy {
             this.notFound.set(true);
             return;
           }
-
+          if (e.status === 403) {
+            this.snackbarService.show('You are not approved. Cannot fetch clips until approval.', 'info', 3000);
+            this.noApproval.set(true);
+            return;
+          }
           this.snackbarService.show('There was an error loading this profile.', 'error', 3000);
         },
       });

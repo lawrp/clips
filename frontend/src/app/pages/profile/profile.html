@@ -124,7 +124,11 @@
             </div>
           </div>
         }
-        @if (clips().length === 0) {
+        @if (noApproval()) {
+          <div class="empty-state">
+            <p>You do not have approval to view clips. Ask an admin for approval.</p>
+          </div>
+        } @else if (clips().length === 0) {
           <div class="empty-state">
             <p>No clips uploaded yet</p>
           </div>

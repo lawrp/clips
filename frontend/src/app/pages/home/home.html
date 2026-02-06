@@ -24,8 +24,11 @@
         </div>
       </div>
     }
-
-    @if (clips().length === 0 && !isLoading()) {
+    @if (noApproval()) {
+      <div class="empty-state">
+        <p>You are not currently approved. Ask an admin for approval.</p>
+      </div>
+    } @else if (clips().length === 0 && !isLoading()) {
       <div class="empty-state">
         <p>No clips yet. Be the first to upload!</p>
       </div>
