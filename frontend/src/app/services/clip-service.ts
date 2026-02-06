@@ -51,7 +51,7 @@ export class ClipService {
     return this.httpClient.delete<void>(`${this.apiUrl}/api/clips/${video_id}`);
   }
 
-  getFeed(cursor?: number, limit: number = 5): Observable<Clip[]> {
+  getFeed(cursor?: number, limit: number = 8): Observable<Clip[]> {
     const params: any = { limit };
     if (cursor) {
       params.cursor = cursor;
