@@ -229,7 +229,7 @@ def get_clip_by_id(clip_id: int,  current_user: Optional[User] = Depends(get_cur
 
 @app.get("/api/clips", response_model=List[ClipResponse])
 def get_clips(user_id: int = None, search: str = None, min_duration: int = None, max_duration: int = None, 
-               current_user: Optional[User] = Depends(get_current_user_optional), skip: int = 0, limit: int = 20, db: Session = Depends(get_db)):
+               current_user: Optional[User] = Depends(get_current_user_optional), skip: int = 0, limit: int = None, db: Session = Depends(get_db)):
     query = db.query(Clip).join(User)
     
     if user_id:
