@@ -7,12 +7,14 @@ DISCORD_WEBHOOK = os.getenv("DISCORD_WEBHOOK_URL")
 BACKEND_URL = os.getenv("BACKEND_URL")
 
 def send_discord_notification(clip: Clip, user: User):
+    
+    author = { "name": user.username }
+    if user.profile_picture_url:
+        author["icon_url"] = f"{BACKEND_URL}{user.profile_picture_url}"
+    
     embed = {
-        "author": {
-            "name": user.username,
-            "icon_url": f"{BACKEND_URL}/api/users/{user.id}/profile-picture" if user.profile_picture else None
-        },
-        "title": f"🎬 {clip.title}",
+        "author": author,
+        "title": f"{clip.title}",
         "description": clip.description or "No description",
         "url": f"{FRONTEND_URL}/clip/{clip.id}",
         "color": 5814783,
@@ -24,7 +26,7 @@ def send_discord_notification(clip: Clip, user: User):
             }
         ],
         "image": {
-            "url": f"{BACKEND_URL}/api/clips/{clip.id}/thumbnail"
+            "url": f"{BACKEND_URL}/{clip.thumbnail_path}"
         },
         "timestamp": clip.uploaded_at.isoformat(),
         "footer": {
