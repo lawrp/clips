@@ -5,48 +5,60 @@ import { Injectable } from '@angular/core';
 })
 export class FolderProcessorService {
   
+  private readonly SUPPORTED_EXTENSIONS = ['.mp4', '.webm'];
+  private readonly SUPPORTED_MIME_TYPES = ['video/mp4', 'video/webm'];
+  
   async processDroppedItems(dataTransfer: DataTransfer): Promise<File[]> {
     const items = dataTransfer.items;
     if (!items) {
       return this.processDroppedFiles(dataTransfer);
     }
 
-    const mp4Files: File[] = [];
+    const videoFiles: File[] = [];
 
     for (let i = 0; i < items.length; i++) {
       const item = items[i].webkitGetAsEntry();
       if (item) {
-        await this.traverseFileTree(item, mp4Files);
+        await this.traverseFileTree(item, videoFiles);
       }
     }
 
-    return mp4Files
+    return videoFiles;
   }
 
   private processDroppedFiles(dataTransfer: DataTransfer): File[] {
     const files = Array.from(dataTransfer.files);
-    return files.filter(file => this.isMP4(file));
+    return files.filter(file => this.isValidVideo(file));
   }
 
   processSelectedFiles(fileList: FileList | null): File[] {
     if (!fileList) return [];
 
     const files = Array.from(fileList);
-    return files.filter(file => this.isMP4(file));
+    return files.filter(file => this.isValidVideo(file));
   }
 
-  private isMP4(file: File): boolean {
-    return file.name.toLowerCase().endsWith('.mp4') && file.type === 'video/mp4'
+  private isValidVideo(file: File): boolean {
+    const extension = this.getFileExtension(file.name);
+    const hasValidExtension = this.SUPPORTED_EXTENSIONS.includes(extension);
+    const hasValidMimeType = this.SUPPORTED_MIME_TYPES.includes(file.type);
+    
+    return hasValidExtension && hasValidMimeType;
   }
 
-  private async traverseFileTree(item: FileSystemEntry, mp4Files: File[]): Promise<void> {
+  private getFileExtension(filename: string): string {
+    return filename.toLowerCase().slice(filename.lastIndexOf('.'));
+  }
+
+  private async traverseFileTree(item: FileSystemEntry, videoFiles: File[]): Promise<void> {
     if (item.isFile) {
       const fileEntry = item as FileSystemFileEntry;
+      const extension = this.getFileExtension(fileEntry.name);
 
-      if (fileEntry.name.toLowerCase().endsWith('.mp4')) {
+      if (this.SUPPORTED_EXTENSIONS.includes(extension)) {
         const file = await this.getFileFromEntry(fileEntry);
-        if (file && this.isMP4(file)) {
-          mp4Files.push(file);
+        if (file && this.isValidVideo(file)) {
+          videoFiles.push(file);
         }
       }
     } else if (item.isDirectory) {
@@ -56,7 +68,7 @@ export class FolderProcessorService {
       const entries = await this.readAllDirectoryEntries(dirReader);
 
       for (const entry of entries) {
-        await this.traverseFileTree(entry, mp4Files);
+        await this.traverseFileTree(entry, videoFiles);
       }
     }
   }
@@ -69,8 +81,8 @@ export class FolderProcessorService {
           console.error('Error reading file:', error);
           resolve(null);
         }
-      )
-    })
+      );
+    });
   }
 
   private readAllDirectoryEntries(dirReader: FileSystemDirectoryReader): Promise<FileSystemEntry[]> {
@@ -88,6 +100,6 @@ export class FolderProcessorService {
         }, (error) => reject(error));
       };
       readEntries();
-    })
+    });
   }
 }

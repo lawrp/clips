@@ -23,11 +23,12 @@ export class ClipService {
     return this.httpClient.get<Clip[]>(`${this.apiUrl}/api/clips`);
   }
 
-  uploadClip(file: File, title: string, description?: string): Observable<HttpEvent<Clip>> {
+  uploadClip(file: File, title: string, description?: string, postToDiscord?: boolean): Observable<HttpEvent<Clip>> {
     const formData = new FormData();
     formData.append('file', file);
     formData.append('title', title);
     formData.append('description', description || '');
+    formData.append('post_to_discord', postToDiscord ? 'true' : 'false'); 
 
     return this.httpClient.post<Clip>(`${this.apiUrl}/api/clips/upload`, formData, {
       reportProgress: true,

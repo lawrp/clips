@@ -10,3 +10,4 @@ sendgrid
 email-validator
 python-dotenv
 Pillow
+requests

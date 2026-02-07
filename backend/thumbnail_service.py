@@ -2,6 +2,7 @@ from PIL import Image
 from pathlib import Path
 import ffmpeg
 import os
+from discord_utils import send_discord_notification
 
 THUMBNAIL_DIR = Path("uploads/thumbnails")
 THUMBNAIL_DIR.mkdir(parents=True, exist_ok=True)
@@ -76,9 +77,9 @@ def cleanup_thumbnails(clip_id: int) -> None:
     if raw_frame_path.exists():
         os.remove(raw_frame_path)
 
-def process_and_store_thumbnail(clip_id: int, video_path: str) -> None:
+def process_and_store_thumbnail(clip_id: int, video_path: str, notify_discord: bool) -> None:
     from database import get_db
-    from models import Clip
+    from models import Clip, User
     
     thumbnail_path = generate_thumbnails(video_path, clip_id)
     if not thumbnail_path:
@@ -90,6 +91,11 @@ def process_and_store_thumbnail(clip_id: int, video_path: str) -> None:
         clip = db_session.query(Clip).filter(Clip.id == clip_id).first()
         if clip:
             clip.thumbnail_path = thumbnail_path
-            db_session.commit()
+            db_session.commit() 
+        
+        if notify_discord and clip:  
+            user = db_session.query(User).filter(User.id == clip.user_id).first()
+            if user:
+                send_discord_notification(clip, user)
     finally:
         db_session.close()

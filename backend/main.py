@@ -139,11 +139,12 @@ async def upload_clip(
     title: str = Form(...),
     description: str = Form(None),
     file: UploadFile = File(...),
+    post_to_discord: bool = Form(False),
     current_user: User = Depends(require_approved),
     db: Session = Depends(get_db)
 ):
-    if not file.filename.endswith('.mp4'):
-        raise HTTPException(status_code=400, detail="Only MP4 files allowed")
+    if not file.filename.endswith(('.mp4', '.webm')):
+        raise HTTPException(status_code=400, detail="Only MP4 and WEBM files allowed")
     
     file_size = 0
     chunk_size = 1024 * 1024
@@ -187,7 +188,8 @@ async def upload_clip(
         raise HTTPException(status_code=500, detail="Failed to save clip")
         
     
-    background_tasks.add_task(process_and_store_thumbnail, new_clip.id, file_path)
+    background_tasks.add_task(process_and_store_thumbnail, new_clip.id, file_path, post_to_discord)
+    
     
     response = ClipResponse(
         id=new_clip.id,
@@ -316,7 +318,7 @@ def stream_video(clip_id: int, current_user: Optional[User] = Depends(get_curren
     
     return FileResponse(
         clip.file_path, 
-        media_type="video/mp4", 
+        media_type="video/webm" if clip.file_path.endswith('.webm') else "video/mp4", 
         headers={
           "Cache-Control": "no-cache, no-store, must-revalidate",
           "Pragma": "no-cache",

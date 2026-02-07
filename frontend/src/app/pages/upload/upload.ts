@@ -31,6 +31,8 @@ export class Upload {
 
   maxFileSize = 1024 * 1024 * 1024; // 1GB
 
+  notifyDiscord = signal<boolean>(false);
+
   get isSingleUpload(): boolean {
     return this.selectedFiles().length === 1;
   }
@@ -132,6 +134,7 @@ export class Upload {
   uploadNextFile() {
     const files = this.selectedFiles();
     const index = this.currentFileIndex();
+    const notifyDiscord = this.notifyDiscord();
 
     if (index >= files.length) {
       this.isUploading.set(false);
@@ -154,7 +157,7 @@ export class Upload {
 
     this.uploadProgress.set(0);
 
-    this.clipService.uploadClip(file, title, description).subscribe({
+    this.clipService.uploadClip(file, title, description, notifyDiscord).subscribe({
       next: (event) => {
 
         if (event.type === HttpEventType.UploadProgress && event.total) {

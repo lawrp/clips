@@ -35,7 +35,7 @@
                 <path d="M12 12v9" />
               </svg>
               <p class="upload-text">Click to select or drag & drop video files</p>
-              <p class="upload-hint">Select files or drop folders with MP4s, max 1GB each</p>
+              <p class="upload-hint">Select files or drop folders with MP4s or WebMs, max 1GB each</p>
             } @else {
               <div class="files-list">
                 @for (file of selectedFiles(); track $index) {
@@ -89,6 +89,18 @@
             placeholder="Add some context about your clip..."
             [disabled]="isUploading()"
           ></textarea>
+        </div>
+
+        <div class="form-group">
+          <label for="discord-notification">Notify Discord?</label>
+          <input
+            type="checkbox"
+            id="discord-notification"
+            name="discord-notification"
+            [ngModel]="notifyDiscord()"
+            (ngModelChange)="notifyDiscord.set($event)"
+            [disabled]="isUploading()"
+            >
         </div>
       }
 
