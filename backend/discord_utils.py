@@ -8,13 +8,14 @@ BACKEND_URL = os.getenv("BACKEND_URL")
 
 def send_discord_notification(clip: Clip, user: User):
     embed = {
-        "title": f"New Clip: {clip.title}",
+        "author": {
+            "name": user.username,
+            "icon_url": f"{BACKEND_URL}/api/users/{user.id}/profile-picture" if user.profile_picture else None
+        },
+        "title": f"🎬 {clip.title}",
         "description": clip.description or "No description",
         "url": f"{FRONTEND_URL}/clip/{clip.id}",
         "color": 5814783,
-        "author": {
-            "name": user.username,
-        },
         "fields": [
             {
                 "name": "Duration",
@@ -22,10 +23,13 @@ def send_discord_notification(clip: Clip, user: User):
                 "inline": True
             }
         ],
-        "thumbnail": {
+        "image": {
             "url": f"{BACKEND_URL}/api/clips/{clip.id}/thumbnail"
         },
-        "timestamp": clip.uploaded_at.isoformat()
+        "timestamp": clip.uploaded_at.isoformat(),
+        "footer": {
+            "text": "ClipHub"
+        }
     }
     
     try:
