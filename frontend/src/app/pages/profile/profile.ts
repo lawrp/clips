@@ -46,7 +46,7 @@ export class Profile implements OnInit, OnDestroy {
 
   isProfileOwner = signal<boolean>(false);
 
-  activeClips = signal<Set<number>>(new Set());
+  activeClip = signal<number | null>(null);
 
   isLoading = signal<boolean>(true);
   notFound = signal<boolean>(false);
@@ -294,7 +294,7 @@ export class Profile implements OnInit, OnDestroy {
   }
 
   activateClip(clipId: number) {
-    this.activeClips.update((current) => new Set(current).add(clipId));
+    this.activeClip.set(clipId);
   }
 
   togglePrivacy(clipId: number) {

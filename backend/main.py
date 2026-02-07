@@ -1,5 +1,5 @@
 from datetime import datetime, timezone, timedelta
-from fastapi import FastAPI, Depends, HTTPException, status, UploadFile, File, Form, BackgroundTasks
+from fastapi import FastAPI, Depends, HTTPException, status, UploadFile, File, Form, BackgroundTasks, Response, Cookie
 from fastapi.security import OAuth2PasswordRequestForm
 from fastapi.responses import FileResponse
 from fastapi.middleware.cors import CORSMiddleware
@@ -22,6 +22,7 @@ from init_admin import create_admin_user
 from contextlib import asynccontextmanager
 from auth_utils import require_admin, require_approved, require_role, require_moderator_or_admin
 from thumbnail_service import process_and_store_thumbnail, cleanup_thumbnails
+from auth import ACCESS_TOKEN_EXPIRATION
 
 Base.metadata.create_all(bind=engine)
 
@@ -65,8 +66,8 @@ def mount_static_files(app: FastAPI):
                   name=name)
         print(f"✅ Static mount verified: /{name} -> {directory}")
 
-@app.post("/api/login", response_model=Token)
-def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
+@app.post("/api/login")
+def login(form_data: OAuth2PasswordRequestForm = Depends(), response: Response = None, db: Session = Depends(get_db)):
     user = db.query(User).filter(User.username == form_data.username).first()
     if not user:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found with that username.")
@@ -78,7 +79,26 @@ def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depend
         )
     
     access_token = create_access_token(data={"sub": user.username})
-    return {"access_token": access_token, "token_type": "bearer"}
+    
+    response.set_cookie(
+        key="access_token",
+        value=access_token,
+        httponly=True,
+        secure=True,
+        samesite="lax",
+        max_age=ACCESS_TOKEN_EXPIRATION * 60
+    )
+    return {"username": user.username}
+
+@app.post("/api/logout")
+def logout(response: Response):
+    response.delete_cookie(
+        key="access_token",
+        httponly=True,
+        secure=False,
+        samesite="lax"
+    )
+    return {"message": "Logged out successfully"}
 
 @app.get("/api/users/me", response_model=UserResponse)
 def get_current_user_info(current_user: User = Depends(get_current_user)):
@@ -287,9 +307,9 @@ def stream_video(clip_id: int, current_user: Optional[User] = Depends(get_curren
     if clip.private:
         if not current_user:
             raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="This clip is private")
-        if current_user.id != clip.user_id and current_user.role != UserRole.ADMIN:
-            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="This clip is private")
-            
+        is_admin = current_user.role == UserRole.ADMIN or current_user.role == "admin"
+        if current_user.id != clip.user_id and not is_admin:
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="This clip is private")            
     
     if not os.path.exists(clip.file_path):
         raise HTTPException(status_code=404, detail="Video file not found")

@@ -99,7 +99,7 @@
         @for (clip of clips(); track clip.id) {
           <div class="clip-card">
             <div class="clip-thumbnail">
-              @if (activeClips().has(clip.id)) {
+              @if (activeClip() === clip.id) {
                 <app-video-player [clipId]="clip.id" [controls]="true" [autoplay]="true" />
               } @else {
                 <app-clip-thumbnail [clip]="clip" (play)="activateClip(clip.id)" />

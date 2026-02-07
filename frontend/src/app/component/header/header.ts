@@ -18,9 +18,18 @@ export class Header {
 
   UserRole = UserRole
 
-  logout() {
-    this.authService.logout();
-    this.router.navigate(['/login']);
+  logout(): void {
+    this.authService.logout().subscribe({
+      next: () => {
+        this.authService.clearUser();
+        this.router.navigate(['/login']);
+      },
+      error: (err) => {
+        console.error('Couldnt log out!', err);
+        this.authService.clearUser();
+        this.router.navigate(['/login']);
+      }
+    })
   }
 
 }

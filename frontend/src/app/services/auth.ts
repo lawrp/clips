@@ -46,24 +46,20 @@ export class AuthService {
   );
 
   initializeAuth(): void {
-    const token = localStorage.getItem('token');
-
-    if (!token) {
-      this.setUser(null);
-      this.authInitializedSubject.next(true);
-      return;
-    }
-
-    this.httpClient.get<User>(`${this.apiUrl}/api/users/me`).subscribe({
-      next: (user) => {
-        this.setUser(user);
-        this.authInitializedSubject.next(true);
-      },
-      error: () => {
-        this.clearSession();
-        this.authInitializedSubject.next(true);
-      },
-    });
+    this.httpClient
+      .get<User>(`${this.apiUrl}/api/users/me`, {
+        withCredentials: true,
+      })
+      .subscribe({
+        next: (user) => {
+          this.setUser(user);
+          this.authInitializedSubject.next(true);
+        },
+        error: () => {
+          this.setUser(null);
+          this.authInitializedSubject.next(true);
+        },
+      });
   }
 
   login(credentials: LoginRequest) {
@@ -72,16 +68,18 @@ export class AuthService {
     formData.set('password', credentials.password);
 
     return this.httpClient
-      .post<TokenResponse>(`${this.apiUrl}/api/login`, formData.toString(), {
+      .post<{ username: string }>(`${this.apiUrl}/api/login`, formData.toString(), {
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',
         },
+        withCredentials: true,
       })
       .pipe(
-        tap((response) => {
-          localStorage.setItem('token', response.access_token);
-        }),
-        switchMap(() => this.httpClient.get<User>(`${this.apiUrl}/api/users/me`)),
+        switchMap(() =>
+          this.httpClient.get<User>(`${this.apiUrl}/api/users/me`, {
+            withCredentials: true,
+          }),
+        ),
         tap((user) => {
           this.setUser(user);
           this.authInitializedSubject.next(true);
@@ -94,7 +92,7 @@ export class AuthService {
   }
 
   logout() {
-    this.clearSession();
+    return this.httpClient.post(`${this.apiUrl}/api/logout`, {});
   }
 
   // Helper method to update both signal and BehaviorSubject
@@ -103,24 +101,37 @@ export class AuthService {
     this.currentUserSubject.next(user);
   }
 
-  private clearSession(): void {
-    localStorage.removeItem('token');
+  clearUser() {
     this.setUser(null);
   }
 
   recoverUsername(email: string) {
-    return this.httpClient.post(`${this.apiUrl}/api/recover-username`, { email: email });
+    return this.httpClient.post(
+      `${this.apiUrl}/api/recover-username`,
+      { email },
+      {
+        withCredentials: true,
+      },
+    );
   }
 
   recoverPassword(details: PasswordRequest) {
-    return this.httpClient.post(`${this.apiUrl}/api/request-password-reset`, {
-      username: details.username,
-      email: details.email,
-    });
+    return this.httpClient.post(
+      `${this.apiUrl}/api/request-password-reset`,
+      {
+        username: details.username,
+        email: details.email,
+      },
+      {
+        withCredentials: true,
+      },
+    );
   }
 
   resetPassword(details: PasswordResetRequest) {
-    return this.httpClient.post(`${this.apiUrl}/api/reset-password`, details);
+    return this.httpClient.post(`${this.apiUrl}/api/reset-password`, details, {
+      withCredentials: true,
+    });
   }
 
   refreshUser(): Observable<User> {
@@ -128,10 +139,14 @@ export class AuthService {
   }
 
   fetchCurrentUser(): Observable<User> {
-    return this.httpClient.get<User>(`${this.apiUrl}/api/users/me`).pipe(
-      tap((user) => {
-        this.currentUserSubject.next(user);
-      }),
-    );
+    return this.httpClient
+      .get<User>(`${this.apiUrl}/api/users/me`, {
+        withCredentials: true,
+      })
+      .pipe(
+        tap((user) => {
+          this.currentUserSubject.next(user);
+        }),
+      );
   }
 }
