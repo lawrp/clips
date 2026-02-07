@@ -85,8 +85,9 @@ def login(form_data: OAuth2PasswordRequestForm = Depends(), response: Response =
         value=access_token,
         httponly=True,
         secure=True,
-        samesite="lax",
-        max_age=ACCESS_TOKEN_EXPIRATION * 60
+        samesite="none",
+        max_age=ACCESS_TOKEN_EXPIRATION * 60,
+        domain=".joycliff.net"
     )
     return {"username": user.username}
 
@@ -95,8 +96,9 @@ def logout(response: Response):
     response.delete_cookie(
         key="access_token",
         httponly=True,
-        secure=False,
-        samesite="lax"
+        secure=True,
+        samesite="none",
+        domain=".joycliff.net"
     )
     return {"message": "Logged out successfully"}
 
