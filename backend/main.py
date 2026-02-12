@@ -15,7 +15,7 @@ import ffmpeg
 from database import get_db, Base, engine
 from models import User, Clip, Comment, CommentDislike, CommentLike, ClipLike
 from schemas import UserCreate, UserResponse, Token, ClipResponse, CommentResponse, CommentCreate, CommentUpdate, ClipUpdate, PasswordRequest, PasswordResetRequest, EmailRequest, ProfilePictureResponse, UserRole, UserApprovalUpdate, UserRoleUpdate, AdminStats
-from auth import hash_password, verify_password, create_access_token, get_current_user, get_current_user_optional
+from auth import hash_password, verify_password, create_access_token, get_current_user, get_current_user_optional, cookie_domain, is_prod
 from email_service import send_username_recovery_email, send_password_recovery_email, generate_reset_token
 from image_utils import save_profile_picture, delete_profile_picture_file
 from init_admin import create_admin_user
@@ -84,10 +84,10 @@ def login(form_data: OAuth2PasswordRequestForm = Depends(), response: Response =
         key="access_token",
         value=access_token,
         httponly=True,
-        secure=True,
-        samesite="none",
+        secure=is_prod,
+        samesite="none" if is_prod else "lax",
         max_age=ACCESS_TOKEN_EXPIRATION * 60,
-        domain=".joycliff.net"
+        domain=cookie_domain
     )
     return {"username": user.username}
 
@@ -96,9 +96,9 @@ def logout(response: Response):
     response.delete_cookie(
         key="access_token",
         httponly=True,
-        secure=True,
-        samesite="none",
-        domain=".joycliff.net"
+        secure=is_prod,
+        samesite="none" if is_prod else "lax",
+        domain=cookie_domain
     )
     return {"message": "Logged out successfully"}
 

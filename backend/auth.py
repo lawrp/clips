@@ -7,10 +7,15 @@ from database import get_db
 from models import User
 import bcrypt
 from typing import Optional
+import os
 
 SECRET_KEY = "MY_SECRET_KEY"
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRATION = 60 * 24 * 14
+
+BACKEND_URL = os.getenv("BACKEND_URL", "https://localhost:8000")
+is_prod = "joycliff.net" in BACKEND_URL
+cookie_domain = ".joycliff.net" if is_prod else None
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/login")
 oauth2_scheme_optional = OAuth2PasswordBearer(tokenUrl="/api/login", auto_error=False)

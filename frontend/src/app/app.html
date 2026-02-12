@@ -1,8 +1,7 @@
 <app-snackbar></app-snackbar>
 @if (isAuthenticated()) {
   <app-header></app-header>
-} @else {
-  <app-no-auth-header>
-  </app-no-auth-header>
+} @else if (showNoAuthHeader()){
+  <app-no-auth-header></app-no-auth-header>
 }
 <router-outlet></router-outlet>
