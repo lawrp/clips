@@ -1,7 +1,7 @@
 from datetime import datetime, timezone, timedelta
-from fastapi import FastAPI, Depends, HTTPException, status, UploadFile, File, Form, BackgroundTasks, Response, Cookie
+from fastapi import FastAPI, Depends, HTTPException, status, UploadFile, File, Form, BackgroundTasks, Response, Cookie, Request
 from fastapi.security import OAuth2PasswordRequestForm
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, HTMLResponse, RedirectResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from sqlalchemy.orm import Session
@@ -9,6 +9,7 @@ from typing import List, Optional
 from dotenv import load_dotenv
 import shutil
 import os
+import html as html_lib
 from uuid import uuid4
 import ffmpeg
 
@@ -131,8 +132,6 @@ def register(user: UserCreate, db: Session = Depends(get_db)):
     db.add(new_user)
     db.commit()
     db.refresh(new_user)
-    print(new_user.username)
-    print(new_user.password_hash)
     return new_user
 
 @app.post("/api/clips/upload", response_model=ClipResponse)
@@ -960,7 +959,7 @@ def get_admin_stats(current_user: User = Depends(require_admin), db: Session = D
         "total_videos": total_videos,
         "total_comments": total_comments,
         "admins": db.query(User).filter(User.role == UserRole.ADMIN).count(),
-        "moderators": db.query(User).filter(User.role == UserRole.MODEDRATOR).count()
+        "moderators": db.query(User).filter(User.role == UserRole.MODERATOR).count()
     }
 
 @app.get("/api/feed", response_model=List[ClipResponse])
@@ -1003,3 +1002,68 @@ def get_feed(
         for clip in clips
         if os.path.exists(clip.file_path)
     ]
+
+BOT_USER_AGENTS = (
+    "discordbot", "slackbot", "twitterbot", "facebookexternalhit",
+    "linkedinbot", "telegrambot", "whatsapp", "pinterest", "googlebot",
+    "bingbot", "duckduckbot", "applebot", "embedly", "rogerbot",
+)
+
+BACKEND_URL_PUBLIC = os.getenv("BACKEND_URL", "http://localhost:8000")
+FRONTEND_URL_PUBLIC = os.getenv("FRONTEND_URL", "http://localhost:4200")
+
+@app.get("/clip/{clip_id}", response_class=HTMLResponse)
+def clip_embed(clip_id: int, request: Request, db: Session = Depends(get_db)):
+    clip = db.query(Clip).filter(Clip.id == clip_id).first()
+
+    user_agent = request.headers.get("user-agent", "").lower()
+    is_bot = any(bot in user_agent for bot in BOT_USER_AGENTS)
+
+    if not is_bot:
+        return RedirectResponse(url=f"{FRONTEND_URL_PUBLIC}/clip/{clip_id}")
+
+    if not clip or clip.private:
+        return HTMLResponse(content="<html><body>Not found</body></html>", status_code=404)
+
+    thumbnail_url = (
+        f"{BACKEND_URL_PUBLIC}/{clip.thumbnail_path}"
+        if clip.thumbnail_path
+        else f"{BACKEND_URL_PUBLIC}/uploads/thumbnails/default.jpg"
+    )
+    video_url = f"{BACKEND_URL_PUBLIC}/api/clips/{clip_id}/video"
+    clip_page_url = f"{FRONTEND_URL_PUBLIC}/clip/{clip_id}"
+    title = html_lib.escape(clip.title)
+    description = html_lib.escape(clip.description or f"Uploaded by {clip.user.username}")
+
+    html = f"""<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>{title}</title>
+  <meta property="og:type" content="video.other">
+  <meta property="og:site_name" content="ClipHub">
+  <meta property="og:title" content="{title}">
+  <meta property="og:description" content="{description}">
+  <meta property="og:url" content="{clip_page_url}">
+  <meta property="og:image" content="{thumbnail_url}">
+  <meta property="og:image:width" content="1280">
+  <meta property="og:image:height" content="720">
+  <meta property="og:video" content="{video_url}">
+  <meta property="og:video:secure_url" content="{video_url}">
+  <meta property="og:video:type" content="video/mp4">
+  <meta property="og:video:width" content="1280">
+  <meta property="og:video:height" content="720">
+  <meta name="twitter:card" content="player">
+  <meta name="twitter:title" content="{title}">
+  <meta name="twitter:description" content="{description}">
+  <meta name="twitter:image" content="{thumbnail_url}">
+  <meta name="twitter:player" content="{video_url}">
+  <meta name="twitter:player:width" content="1280">
+  <meta name="twitter:player:height" content="720">
+</head>
+<body>
+  <a href="{clip_page_url}">{title}</a>
+</body>
+</html>"""
+
+    return HTMLResponse(content=html)

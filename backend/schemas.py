@@ -5,7 +5,7 @@ from enum import Enum
 
 class UserRole(str, Enum):
     ADMIN = "admin"
-    MODEDRATOR = "moderator"
+    MODERATOR = "moderator"
     USER = "user"
     GUEST = "guest"
 
