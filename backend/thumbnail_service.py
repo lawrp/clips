@@ -79,7 +79,7 @@ def cleanup_thumbnails(clip_id: int) -> None:
 
 def process_and_store_thumbnail(clip_id: int, video_path: str, notify_discord: bool) -> None:
     from database import get_db
-    from models import Clip, User
+    from models import Clip
     
     thumbnail_path = generate_thumbnails(video_path, clip_id)
     if not thumbnail_path:
@@ -93,9 +93,7 @@ def process_and_store_thumbnail(clip_id: int, video_path: str, notify_discord: b
             clip.thumbnail_path = thumbnail_path
             db_session.commit() 
         
-        if notify_discord and clip:  
-            user = db_session.query(User).filter(User.id == clip.user_id).first()
-            if user:
-                send_discord_notification(clip, user)
+        if notify_discord and clip:
+            send_discord_notification(clip)
     finally:
         db_session.close()

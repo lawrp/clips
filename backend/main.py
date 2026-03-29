@@ -300,8 +300,9 @@ def get_clips(user_id: int = None, search: str = None, min_duration: int = None,
         if os.path.exists(clip.file_path)
     ]
 
+@app.get("/api/clips/{clip_id}/video/{filename}")
 @app.get("/api/clips/{clip_id}/video")
-def stream_video(clip_id: int, current_user: Optional[User] = Depends(get_current_user_optional), db: Session = Depends(get_db)):
+def stream_video(clip_id: int, filename: str = None, current_user: Optional[User] = Depends(get_current_user_optional), db: Session = Depends(get_db)):
     clip = db.query(Clip).filter(Clip.id == clip_id).first()
     
     if not clip:
