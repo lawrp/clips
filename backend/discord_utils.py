@@ -34,8 +34,10 @@ def send_discord_notification(clip: Clip, user: User):
         }
     }
     
+    video_url = f"{BACKEND_URL}/{clip.file_path}"
+
     try:
-        response = requests.post(DISCORD_WEBHOOK, json={"embeds": [embed]})
+        response = requests.post(DISCORD_WEBHOOK, json={"content": video_url, "embeds": [embed]})
         response.raise_for_status()
     except Exception as e:
         print(f"Discord notification failed: {e}")
